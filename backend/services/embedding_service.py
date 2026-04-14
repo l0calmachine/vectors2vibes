@@ -35,7 +35,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-PARQUET_URL = "https://huggingface.co/datasets/vectors2vibes/vectors2vibes-discogs-metadata/resolve/main/master_dataset.parquet"
+PARQUET_URL = "https://huggingface.co/datasets/vectors2vibes/vectors2vibes-discogs-metadata/resolve/main/data/master_dataset.parquet"
 
 CACHE_PATH  = Path(__file__).parent.parent / "data" / "umap_cache.pkl"
 PARQUET_CACHE = Path(__file__).parent.parent / "data" / "master_dataset.parquet"
