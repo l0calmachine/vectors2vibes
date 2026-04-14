@@ -1,10 +1,25 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Audio
+data/audio/
 *.mp3
 *.wav
 *.flac
 *.m4a
+
+# Thumbnails
+raw_thumbnails/
+filtered_thumbnails/
+data/album_art/
 *.jpg
 *.jpeg
 *.png
-data/album_art/
-data/audio/
+*.webp
+
+# Data
+*.parquet
+*.csv
 *.zip
