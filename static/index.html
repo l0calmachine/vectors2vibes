@@ -268,6 +268,7 @@ const SESSION_ID = 'v2v_' + Math.random().toString(36).slice(2);
 let embeddings = [], currentEmb = null, isWarping = false, weights = {};
 let currentLayer = 'audio';
 let minimapOffscreen = null;
+let _minimapBuildId = 0;
 
 // ── Scene ──────────────────────────────────────────────────────
 const scene = new THREE.Scene();
@@ -695,35 +696,30 @@ const mmCanvas = document.getElementById('minimap-canvas');
 const mmCtx = mmCanvas.getContext('2d');
 const MM = 140, MM_SCALE = 0.055;
 
-function buildMinimapOffscreen() {
+// Async so it yields to the browser every 500 dots — prevents blocking the render loop.
+// _minimapBuildId is a cancellation token: if the layer changes mid-build, the old build exits early.
+async function buildMinimapOffscreen() {
+  const myId = ++_minimapBuildId;
   const size = 2000;
   const oc = document.createElement('canvas');
   oc.width = size; oc.height = size;
   const ctx = oc.getContext('2d');
   ctx.clearRect(0, 0, size, size);
 
+  let count = 0;
   for (const emb of embeddings) {
-    let wx, wz;
-    if (currentLayer === 'lyrical') {
-      wx = emb.lyric_coords ? emb.lyric_coords[0] : emb.pos_x;
-      wz = emb.lyric_coords ? emb.lyric_coords[1] : emb.pos_z;
-    } else if (currentLayer === 'year') {
-      wx = emb.pos_x;
-      wz = emb.pos_z;
-    } else {
-      wx = emb.audio_coords ? emb.audio_coords[0] : emb.pos_x;
-      wz = emb.audio_coords ? emb.audio_coords[1] : emb.pos_z;
-    }
-    // Map world coords [-1000, 1000] to canvas [0, 2000]
-    const cx = (wx + 1000) / 2000 * size;
-    const cy = (wz + 1000) / 2000 * size;
+    if (myId !== _minimapBuildId) return; // cancelled by a newer layer switch
+    // emb.pos_x/pos_z always reflect the current layer after applyLayerPositions()
+    const cx = (emb.pos_x + 1000) / 2000 * size;
+    const cy = (emb.pos_z + 1000) / 2000 * size;
     ctx.beginPath();
     ctx.arc(cx, cy, 3, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(176,169,159,1.0)';
     ctx.fill();
+    if (++count % 500 === 0) await new Promise(r => setTimeout(r, 0));
   }
 
-  minimapOffscreen = oc;
+  if (myId === _minimapBuildId) minimapOffscreen = oc;
 }
 
 function drawMinimap() {
@@ -990,14 +986,43 @@ document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click
   if (m==='derive') toggleDerive(); else triggerNav(m);
 }));
 
+// ── Layer positions (client-side, no network request) ─────────────────────
+// audio_coords and lyric_coords are already loaded for every embedding during loadWorld().
+// The year spiral is deterministic — we mirror world_service._year_spiral_positions() in JS.
+function computeLayerPositions(layer) {
+  const pos = {};
+  if (layer === 'audio') {
+    for (const emb of embeddings) {
+      const c = emb.audio_coords;
+      if (c) pos[emb.id] = { pos_x: c[0], pos_z: c[1] };
+    }
+  } else if (layer === 'lyrical') {
+    for (const emb of embeddings) {
+      const c = emb.lyric_coords;
+      if (c) pos[emb.id] = { pos_x: c[0], pos_z: c[1] };
+    }
+  } else if (layer === 'year') {
+    // Mirror of world_service._year_spiral_positions(): sort by year, place on a growing spiral.
+    const sorted = [...embeddings].sort((a, b) => a.year - b.year);
+    const n = sorted.length;
+    sorted.forEach((emb, i) => {
+      const angle  = i * 0.3;
+      const radius = 50 + (i / n) * 950;
+      pos[emb.id] = {
+        pos_x: Math.round(Math.cos(angle) * radius * 100) / 100,
+        pos_z: Math.round(Math.sin(angle) * radius * 100) / 100,
+      };
+    });
+  }
+  return pos;
+}
+
 document.querySelectorAll('.layer-btn').forEach(btn => btn.addEventListener('click', () => {
   document.querySelectorAll('.layer-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   const layer = btn.dataset.layer;
   currentLayer = layer;
-  const lyricDiv = document.getElementById('lyric-columns');
-  lyricDiv.style.opacity = layer === 'lyrical' ? '1' : '0';
-  buildMinimapOffscreen();
+  document.getElementById('lyric-columns').style.opacity = layer === 'lyrical' ? '1' : '0';
 
   // Redraw vector text canvases to reflect new layer coordinates
   for (const [, entry] of planes) {
@@ -1006,38 +1031,43 @@ document.querySelectorAll('.layer-btn').forEach(btn => btn.addEventListener('cli
     entry.vecMesh.material.map.needsUpdate = true;
   }
 
-  isWarping = true;  
-  fetch(`/api/world/layers?layer=${layer}`).then(r=>r.json()).then(pos => {
-      // Print for debug
-      const sample = Object.entries(pos).slice(0, 3);
-      console.log('layer positions sample:', JSON.stringify(sample));
-      console.log('first pos_x:', sample[0]?.[1]?.pos_x);
+  isWarping = true;
 
-      for (const [id, p] of Object.entries(pos)) {
-        const entry = planes.get(id); if (!entry) continue;
-        entry.emb.pos_x = p.pos_x; entry.emb.pos_z = p.pos_z;
-        entry.targetThumb.set(p.pos_x, 0, p.pos_z);
-        entry.targetVec.x = p.pos_x + (entry.vecMesh.position.x - entry.thumbMesh.position.x);
-        entry.targetVec.z = p.pos_z + (entry.vecMesh.position.z - entry.thumbMesh.position.z);
-      }
-      // Anchor camera to current nearest track's new position after layer switch
-      if (lastNearId && pos[lastNearId]) {
-          const p = pos[lastNearId];
-          camera.position.x = p.pos_x;
-          camera.position.z = p.pos_z + 22;
-          faceTarget(p.pos_x, p.pos_z);
-          prespawnAround(p.pos_x, p.pos_z);
-      }
-      setTimeout(() => { isWarping = false; }, 1500);
-    });
-  fetch('/api/listener/layer', { 
-    method:'POST', 
+  // Compute all positions client-side — no network request needed for any layer.
+  const pos = computeLayerPositions(layer);
+
+  // Update pos_x/pos_z on ALL embeddings (not just spawned planes) so updatePlaneBudget()
+  // correctly decides what to spawn/despawn as the camera moves in the new layer.
+  for (const emb of embeddings) {
+    const p = pos[emb.id];
+    if (p) { emb.pos_x = p.pos_x; emb.pos_z = p.pos_z; }
+  }
+
+  // Animate spawned planes to their new positions
+  for (const [id, entry] of planes) {
+    const p = pos[id]; if (!p) continue;
+    entry.targetThumb.set(p.pos_x, 0, p.pos_z);
+    entry.targetVec.x = p.pos_x + (entry.vecMesh.position.x - entry.thumbMesh.position.x);
+    entry.targetVec.z = p.pos_z + (entry.vecMesh.position.z - entry.thumbMesh.position.z);
+  }
+
+  // Anchor camera to the current nearest track's new position
+  if (lastNearId && pos[lastNearId]) {
+    const p = pos[lastNearId];
+    camera.position.x = p.pos_x;
+    camera.position.z = p.pos_z + 22;
+    faceTarget(p.pos_x, p.pos_z);
+    prespawnAround(p.pos_x, p.pos_z);
+  }
+
+  // Defer minimap rebuild to a future task so it doesn't block the render loop
+  setTimeout(buildMinimapOffscreen, 0);
+  setTimeout(() => { isWarping = false; }, 1500);
+
+  fetch('/api/listener/layer', {
+    method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ 
-      session_id: SESSION_ID, 
-      layer, 
-      duration_ms: 0,
-    })
+    body: JSON.stringify({ session_id: SESSION_ID, layer, duration_ms: 0 })
   });
 }));
 
