@@ -143,6 +143,4 @@ The centroid's coordinates shift between audio and lyrical embedding space depen
 
 ## Known Issues / Pending Work
 
-- **Lag** — primary causes are too many audio streams and per-frame GLSL shader processing. Tune `AUDIO_R`, `MAX_AUDIO_ELS`, `SPAWN_R`, and `MAX_PLANES` in `index.html` to reduce load. Long-term fix: preprocess thumbnails (removing real-time shader), and implement instanced rendering.
-- **Minimap** — shows all 12,620 tracks as a static offscreen canvas, redrawn on layer switch. Could be improved with a server-generated image for better performance.
-- **Thumbnails** — Plan: preprocess and host on HuggingFace as pre-filtered WebP images to remove real-time shader and reduce lag.
+- **Lag** — primary cause is HF streaming. Tune `AUDIO_R`, `MAX_AUDIO_ELS`, `SPAWN_R`, and `MAX_PLANES` in `index.html` to reduce load. Long-term fix: host data locally.
