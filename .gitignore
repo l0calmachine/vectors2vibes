@@ -1,6 +1,8 @@
 # Python
 venv/
-__pycache__/
+backend/__pycache__/
+backend/routers/__pycache__/
+backend/services/__pycache__/
 *.pyc
 
 # Audio
@@ -11,6 +13,7 @@ data/audio/
 *.m4a
 
 # Thumbnails
+filtered_thumbnails/
 raw_thumbnails/
 filtered_thumbnails/
 data/album_art/
@@ -21,6 +24,7 @@ data/album_art/
 
 # Data
 .env
+backend/data/
 *.parquet
 *.csv
 *.zip
