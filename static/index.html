@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vectors2vibes</title>
+<style>
+@font-face {
+  font-family: 'CirrusCumulus';
+  src: url('/static/CirrusCumulus.woff') format('woff'),
+       url('/static/CirrusCumulus.ttf') format('truetype');
+  font-weight: normal; font-style: normal;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --paper:  #d4cfc8;
+  --ink:    #2a2520;
+  --dim:    #7a7368;
+  --faint:  #b0a99f;
+  --bg:     #0a0908;
+}
+* { font-family: 'CirrusCumulus', monospace; }
+body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: crosshair; }
+#canvas-container { position: fixed; inset: 0; pointer-events: none; }
+
+/* HUD */
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+
+#topleft { position: absolute; top: 16px; left: 18px; line-height: 1.4; }
+#title   { font-size: 13px; letter-spacing: 3px; color: var(--faint); text-transform: lowercase; }
+#coords  { font-size: 9px; color: var(--dim); margin-top: 2px; }
+
+#layers {
+  position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 2px; pointer-events: all;
+}
+.layer-btn {
+  background: transparent; border: 1px solid var(--dim);
+  color: var(--dim); font-size: 11px; letter-spacing: 2px;
+  padding: 4px 10px; cursor: pointer;
+}
+.layer-btn:hover, .layer-btn.active { border-color: var(--paper); color: var(--paper); }
+
+/* Nav + minimap location in bottom-right */
+#bottomright {
+  position: absolute; bottom: 18px; right: 18px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  pointer-events: all;
+}
+#nav-controls { display: flex; flex-direction: column; gap: 3px; }
+.nav-btn {
+  background: transparent; border: 1px solid var(--dim);
+  color: var(--dim); font-size: 13px; letter-spacing: 1px;
+  padding: 4px 12px; cursor: pointer; text-align: left; white-space: nowrap;
+}
+.nav-btn:hover { color: var(--paper); border-color: var(--paper); }
+.nav-btn .key { font-size: 9px; color: var(--dim); margin-left: 8px; }
+
+/* Minimap */
+#minimap { pointer-events: none; }
+#minimap canvas { display: block; }
+
+#derive-panel {
+  position: absolute; bottom: 18px; left: 18px;
+  display: none; flex-direction: column; gap: 6px;
+  pointer-events: all; border: 1px solid var(--dim);
+  padding: 10px; width: 200px; background: rgba(10,9,8,0.88);
+}
+#derive-panel.visible { display: flex; }
+#derive-panel label { font-size: 10px; color: var(--dim); letter-spacing: 1px; }
+#derive-panel select, #derive-panel input {
+  background: transparent; border: 1px solid var(--dim);
+  color: var(--paper); font-size: 10px; padding: 3px 5px; width: 100%;
+}
+#derive-go {
+  background: transparent; border: 1px solid var(--faint);
+  color: var(--paper); font-size: 13px; padding: 4px;
+  cursor: pointer; margin-top: 2px;
+}
+#derive-go:hover { background: rgba(212,207,200,0.08); }
+
+/* Now-playing location in bottom-left */
+#now-playing {
+  position: absolute; bottom: 18px; left: 18px;
+  display: flex; align-items: flex-start; gap: 10px;
+  max-width: 340px;
+}
+#np-thumb {
+  width: 32px; height: 32px; object-fit: fill;
+  image-rendering: pixelated; flex-shrink: 0; opacity: 0.7;
+}
+#np-info  { flex: 1; overflow: hidden; }
+#np-title { font-size: 13px; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 1px; }
+#np-meta  { font-size: 9px; color: var(--dim); margin-top: 3px; }
+
+/* ── Spawn landing page ─────────────────────────────────── */
+#spawn-screen {
+  position: fixed; inset: 0; background: var(--bg); z-index: 999;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 28px;
+  padding: 40px;
+}
+#spawn-title { font-size: 18px; color: var(--faint); letter-spacing: 6px; }
+#spawn-subtitle { font-size: 10px; color: var(--dim); letter-spacing: 2px; margin-top: -18px; }
+
+#spawn-options { display: flex; flex-direction: column; gap: 10px; width: 320px; }
+
+.spawn-option {
+  border: 1px solid var(--dim); padding: 14px 16px;
+  cursor: pointer; transition: none;
+}
+.spawn-option:hover { border-color: var(--paper); }
+.spawn-option-title { font-size: 14px; color: var(--paper); letter-spacing: 1px; margin-bottom: 4px; }
+.spawn-option-desc  { font-size: 9px; color: var(--dim); letter-spacing: 1px; line-height: 1.5; }
+
+#spawn-params { width: 320px; display: flex; flex-direction: column; gap: 8px; }
+#spawn-params label { font-size: 9px; color: var(--dim); letter-spacing: 1px; }
+#spawn-params input, #spawn-params input[type=number] {
+  background: transparent; border: 1px solid var(--dim);
+  color: var(--paper); font-size: 11px; padding: 5px 8px; width: 100%;
+}
+
+#spawn-go {
+  width: 320px; background: transparent; border: 1px solid var(--faint);
+  color: var(--paper); font-size: 14px; letter-spacing: 2px;
+  padding: 10px; cursor: pointer;
+}
+#spawn-go:hover { background: rgba(212,207,200,0.06); }
+
+/* Loading bar shown after birth year chosen */
+#spawn-loading { display: none; flex-direction: column; align-items: center; gap: 12px; }
+#spawn-loading-msg { font-size: 10px; color: var(--dim); letter-spacing: 2px; }
+#spawn-bar-wrap { width: 220px; height: 1px; background: var(--dim); }
+#spawn-bar { height: 100%; background: var(--faint); width: 0%; transition: width 0.3s; }
+
+#hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 10px; color: var(--dim); letter-spacing: 2px; pointer-events: none; opacity: 0.6; }
+
+/* Nav action typewriter text */
+#nav-status {
+  position: absolute;
+  bottom: 52px;
+  left: 55%;
+  font-size: 11px; color: var(--faint);
+  letter-spacing: 1px; pointer-events: none;
+  opacity: 0; transition: opacity 0.3s;
+  white-space: nowrap;
+}
+
+/* ── Lyric columns ───────────────────────────────────────── */
+#lyric-columns {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  bottom: 80px; /* leave room for bottom-left metadata */
+  display: flex;
+  gap: 0;
+  pointer-events: none;
+  z-index: 5; /* above canvas, below HUD */
+  opacity: 0;
+  transition: opacity 1.5s;
+}
+.lyric-col {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--dim) 8%,
+    var(--dim) 92%,
+    transparent 100%
+  );
+}
+.lyric-col-inner {
+  position: absolute;
+  top: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  line-height: 1.6;
+  color: var(--dim);
+  opacity: 0.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 0 4px;
+  animation: scroll-up linear infinite;
+}
+@keyframes scroll-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+
+</style>
+</head>
+<body>
+
+<div id="spawn-screen">
+  <div id="spawn-title">vectors2vibes</div>
+  <div id="spawn-subtitle">spawn at the centroid of your formative listening years</div>
+
+  <div id="spawn-options">
+    <div class="spawn-option" data-mode="nostalgia">
+      <div class="spawn-option-title">enter your birth year</div>
+    </div>
+  </div>
+
+  <div id="spawn-params">
+    <div id="param-birth-year" style="display:none;">
+      <input type="number" id="input-birth-year" value="1990" min="1920" max="2010">
+    </div>
+  </div>
+
+  <button id="spawn-go" style="display:none;">spawn →</button>
+
+  <div id="spawn-loading">
+    <div id="spawn-loading-msg">loading world...</div>
+    <div id="spawn-bar-wrap"><div id="spawn-bar"></div></div>
+  </div>
+</div>
+
+<div id="canvas-container"></div>
+
+<div id="lyric-columns"></div>
+
+<div id="hud">
+  <div id="topleft">
+    <div id="title">vectors2vibes</div>
+    <div id="coords">x:0  z:0</div>
+  </div>
+
+  <div id="layers">
+    <button class="layer-btn active" data-layer="audio">audio</button>
+    <button class="layer-btn" data-layer="lyrical">lyrical</button>
+    <button class="layer-btn" data-layer="year">year</button>
+  </div>
+
+  <div id="now-playing">
+    <img id="np-thumb" src="" alt="">
+    <div id="np-info">
+      <div id="np-title">—</div>
+      <div id="np-meta">—</div>
+    </div>
+  </div>
+
+  <div id="bottomright">
+    <div id="nav-controls">
+      <button class="nav-btn" data-mode="derive">dérive<span class="key">[1]</span></button>
+      <button class="nav-btn" data-mode="detourn">détourn<span class="key">[2]</span></button>
+      <button class="nav-btn" data-mode="frolic">frolic<span class="key">[3]</span></button>
+    </div>
+    <div id="minimap">
+      <canvas id="minimap-canvas" width="140" height="140"></canvas>
+    </div>
+  </div>
+
+  <div id="derive-panel">
+    <label>target year</label>
+    <input id="derive-val" type="number" value="1980" min="1900" max="2030">
+    <button id="derive-go">derive →</button>
+  </div>
+
+  <div id="hint">click to look around</div>
+  <div id="nav-status"></div>
+</div>
+
+<!-- Three.js load in from Cloudflare -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const SESSION_ID = 'v2v_' + Math.random().toString(36).slice(2);
+let embeddings = [], currentEmb = null, isWarping = false, weights = {};
+let currentLayer = 'audio';
+let minimapOffscreen = null;
+
+// ── Scene ──────────────────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0908);
+scene.fog = new THREE.FogExp2(0x0a0908, 0.004);
+
+const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 600);
+camera.position.set(0, 0, 0);
+camera.rotation.order = 'YXZ';
+
+const renderer = new THREE.WebGLRenderer({ antialias: false });
+renderer.setPixelRatio(1);
+renderer.setSize(innerWidth, innerHeight);
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+// Canvas pointer events disabled while spawn screen is visible (on top of world planes); re-enabled in loadWorld() after fade in
+renderer.domElement.style.pointerEvents = 'none';
+
+const texLoader = new THREE.TextureLoader();
+texLoader.crossOrigin = 'anonymous';
+
+const PW = 18, PH = 13;
+const planes = new Map(); // id → { thumbMesh, vecMesh, emb, targetThumb, targetVec }
+
+// Only planes within SPAWN_R of the camera are loaded to prevent lagging.
+// Planes are created when the camera approaches (spawnEmbedding) and destroyed when it moves away (despawnEmbedding).
+// SPAWN_R < DESPAWN_R creates a buffer zone so planes don't flicker at the boundary.
+// Tune these values if lag persists — lower = less GPU/CPU load but smaller visible neighbourhood
+const SPAWN_R   = 200;  // spawn planes within this radius
+const DESPAWN_R = 350;  // despawn planes beyond this radius
+const MAX_PLANES = 400; // hard cap of loaded planes
+
+// ── Helpers ─────────────────
+function hashId(id) {
+  let h = 0;
+  const s = String(id);
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function makeFallbackTex(emb) {
+  const c = document.createElement('canvas');
+  c.width = 32; c.height = 24;
+  const ctx = c.getContext('2d');
+  const h = ((emb.year || 0) * 11 + (emb.duration || 120) * 3) % 360;
+  ctx.fillStyle = `hsl(${h},15%,20%)`;
+  ctx.fillRect(0, 0, 32, 24);
+  ctx.fillStyle = `hsl(${h},10%,28%)`;
+  for (let y = 0; y < 24; y += 4) {
+    for (let x = ((y/4) % 2) * 4; x < 32; x += 8) ctx.fillRect(x, y, 3, 3);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.minFilter = t.magFilter = THREE.NearestFilter;
+  return t;
+}
+
+function makeVectorCanvas(emb) {
+  const c = document.createElement('canvas');
+  c.width = 320; c.height = 80;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 320, 80);
+  const coords = currentLayer === 'lyrical' ? (emb.lyric_coords || [0,0]) : (emb.audio_coords || [0,0]);
+  const str = `[ ${coords.join(', ')} ]`;
+  ctx.font = '11px "Courier New"';
+  ctx.fillStyle = 'rgba(212,207,200,0.78)';
+  const half = Math.floor(str.length / 2);
+  ctx.fillText(str.slice(0, half), 6, 22);
+  ctx.fillText(str.slice(half), 6, 38);
+  ctx.beginPath();
+  ctx.arc(10, 56, 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(212,207,200,0.92)';
+  ctx.fill();
+  return c;
+}
+
+// ── Spawn embedding ────────────────────────────────────────────
+function spawnEmbedding(emb) {
+  if (planes.has(emb.id)) return; // already spawned
+
+  const seed = hashId(emb.id);
+
+  // ── Thumbnail plane ──────────────────────────────────────
+  const thumbGeo = new THREE.PlaneGeometry(PW, PH);
+  const mat = new THREE.MeshBasicMaterial({
+      map: makeFallbackTex(emb),
+      transparent: true,
+      side: THREE.DoubleSide,
+      opacity: 0,
+  });
+
+  if (emb.thumbnail_url) {
+      texLoader.load(
+          emb.thumbnail_url,
+          t => {
+              t.minFilter = t.magFilter = THREE.NearestFilter;
+              mat.map = t;
+              mat.needsUpdate = true;
+          }
+      );
+  }
+
+  const thumbMesh = new THREE.Mesh(thumbGeo, mat);
+  thumbMesh.position.set(emb.pos_x, 0, emb.pos_z);
+  thumbMesh.rotation.y = (seed % 100) / 100 * 0.5 - 0.25;
+  thumbMesh.rotation.x = ((seed >> 4) % 100) / 100 * 0.1 - 0.05;
+  scene.add(thumbMesh);
+
+    // ── Vector text plane ──────────── 
+    // text plane and thumbnail plane intersect at independent random angles
+    const vecCanvas = makeVectorCanvas(emb);
+    const vecTex = new THREE.CanvasTexture(vecCanvas);
+    vecTex.minFilter = THREE.LinearFilter;
+
+    const vecGeo = new THREE.PlaneGeometry(PW * 0.85, PW * 0.85 * (80/320));
+    const vecMat = new THREE.MeshBasicMaterial({ map: vecTex, transparent: true, depthWrite: false, side: THREE.DoubleSide, opacity: 0 });
+    const vecMesh = new THREE.Mesh(vecGeo, vecMat);
+
+    const offX = ((seed >> 2) % 100) / 100 * PW * 0.7 - PW * 0.35;
+    const offY = ((seed >> 6) % 100) / 100 * PH * 0.6 - PH * 0.3;
+    const offZ = ((seed >> 8) % 100) / 100 * 5 - 2.5;
+    vecMesh.position.set(emb.pos_x + offX, offY, emb.pos_z + offZ);
+    vecMesh.rotation.y = thumbMesh.rotation.y + ((seed >> 10) % 100) / 100 * 1.0 - 0.5;
+    vecMesh.rotation.z = ((seed >> 12) % 100) / 100 * 0.4 - 0.2;
+    scene.add(vecMesh);
+
+    planes.set(emb.id, {
+      thumbMesh, vecMesh, emb,
+      targetThumb: thumbMesh.position.clone(),
+      targetVec:   vecMesh.position.clone(),
+    });
+  }
+
+// Three.js does not free GPU memory automatically when a mesh is removed.
+// dispose() must be called explicitly on geometry, material, and textures to prevent VRAM filling up.
+function despawnEmbedding(id) {
+  const entry = planes.get(id);
+  if (!entry) return;
+  const { thumbMesh, vecMesh } = entry;
+
+  // Free thumbnail shader material
+  if (thumbMesh.material.map) {
+      thumbMesh.material.map.dispose();
+  }
+  thumbMesh.material.dispose();  // free material from GPU
+  thumbMesh.geometry.dispose();  // free vertex buffer
+  scene.remove(thumbMesh);
+
+  // Free vector text plane
+  if (vecMesh.material.map) vecMesh.material.map.dispose();
+  vecMesh.material.dispose();
+  vecMesh.geometry.dispose();
+  scene.remove(vecMesh);
+
+  planes.delete(id);
+
+  // Stop any audio for this plane
+  if (audioEls.has(id)) stopAudio(id);
+}
+
+// Manages which planes are active based on camera position — called every 30 frames.
+// Spawns planes entering SPAWN_R, despawns those beyond DESPAWN_R, drops furthest first if over MAX_PLANES.
+function updatePlaneBudget() {
+  const px = camera.position.x, pz = camera.position.z;
+
+  // Spawn any embeddings within SPAWN_R that aren't yet in the scene
+  for (const emb of embeddings) {
+    if (planes.has(emb.id)) continue;
+    const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : emb.pos_x;
+    const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : emb.pos_z;
+    const dx = ex - px, dz = ez - pz;
+    if (Math.sqrt(dx*dx + dz*dz) < SPAWN_R) {
+        spawnEmbedding(emb);
+    }
+  }
+
+  // Despawn planes beyond DESPAWN_R
+  for (const [id, entry] of planes) {
+    const ex = currentLayer === 'lyrical' ? (entry.emb.lyric_coords?.[0] ?? entry.emb.pos_x) : entry.emb.pos_x;
+    const ez = currentLayer === 'lyrical' ? (entry.emb.lyric_coords?.[1] ?? entry.emb.pos_z) : entry.emb.pos_z;
+    const dx = ex - px, dz = ez - pz;
+    if (Math.sqrt(dx*dx + dz*dz) > DESPAWN_R) {
+        despawnEmbedding(id);
+    }
+  }
+
+  // Hard cap on loaded planes; despawn furthest ones if over budget
+  
+if (planes.size > MAX_PLANES) {
+    const sorted = [...planes.entries()].sort((a, b) => {
+        const aex = currentLayer === 'lyrical' ? (a[1].emb.lyric_coords?.[0] ?? a[1].emb.pos_x) : a[1].emb.pos_x;
+        const aez = currentLayer === 'lyrical' ? (a[1].emb.lyric_coords?.[1] ?? a[1].emb.pos_z) : a[1].emb.pos_z;
+        const bex = currentLayer === 'lyrical' ? (b[1].emb.lyric_coords?.[0] ?? b[1].emb.pos_x) : b[1].emb.pos_x;
+        const bez = currentLayer === 'lyrical' ? (b[1].emb.lyric_coords?.[1] ?? b[1].emb.pos_z) : b[1].emb.pos_z;
+        const da = (aex-px)**2 + (aez-pz)**2;
+        const db = (bex-px)**2 + (bez-pz)**2;
+        return db - da;
+    });
+    const toRemove = sorted.slice(0, planes.size - MAX_PLANES);
+    toRemove.forEach(([id]) => despawnEmbedding(id));
+  }
+}
+
+// Pre-spawns planes around a destination before the camera moves there.
+// Async so it yields to the browser every 50 spawns; prevents JavaScript freezing while iterating tracks.
+async function prespawnAround(posX, posZ) {
+  let count = 0;
+  for (const emb of embeddings) {
+    if (planes.has(emb.id)) continue;
+    const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : emb.pos_x;
+    const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : emb.pos_z;
+    const dx = ex - posX, dz = ez - posZ;
+    if (Math.sqrt(dx*dx + dz*dz) < SPAWN_R) {
+      spawnEmbedding(emb);
+      count++;
+      if (count % 50 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+  }
+}
+
+// ── Audio ──────────────────────────────────────────────────────
+// HTMLAudioElement streams audio immediately without buffering the full file.
+// Volume set directly on the element — Web Audio routing caused distortion.
+// Audio routed through /api/audio/stream proxy so HF token stays server-side.
+const audioEls = new Map(); // id → HTMLAudioElement
+
+// When the audio cap is reached, the quietest (furthest) track is dropped to prevent overload and lag
+const MAX_AUDIO_ELS = 10;
+
+function startAudio(emb) {
+  if (audioEls.has(emb.id)) return;
+  const isPlaceholder = !emb.audio_url || emb.audio_url.startsWith('__placeholder');
+  if (isPlaceholder) return;
+
+  if (audioEls.size >= MAX_AUDIO_ELS) {
+    let quietestId = null, quietestVol = Infinity;
+    for (const [id, el] of audioEls) {
+      if (el.volume < quietestVol) { quietestVol = el.volume; quietestId = id; }
+    }
+    if (quietestId) stopAudio(quietestId);
+  }
+
+  const el = new Audio();
+  el.src = emb.audio_url;
+  el.loop = true;
+  el.volume = 0;
+  el.preload = 'none';
+  audioEls.set(emb.id, el);
+
+  if (_audioUnlocked) {
+    el.play().catch(() => {});
+  }
+}
+
+function stopAudio(id) {
+  const el = audioEls.get(id); if (!el) return;
+  el.volume = 0;
+  el.pause();
+  el.src = '';
+  audioEls.delete(id);
+}
+
+function setVol(id, v) {
+  const el = audioEls.get(id); if (!el) return;
+  const target = Math.min(1, Math.max(0, v * 0.9));
+  el.volume = target;
+  if (_audioUnlocked && el.paused && target > 0) el.play().catch(() => {});
+}
+
+// Audio requires a user action before any element can play.
+let _audioUnlocked = false;
+function unlockAudio() {
+  if (_audioUnlocked) return;
+  _audioUnlocked = true;
+  for (const [, el] of audioEls) {
+    if (el.volume > 0) el.play().catch(() => {});
+  }
+}
+document.addEventListener('click',   unlockAudio, { once: false });
+document.addEventListener('keydown', unlockAudio, { once: false });
+
+// ── Proximity ─────────────────────────────────────────────────
+// AUDIO_R = tracks within n units of the camera start playing audio; capped by MAX_AUDIO_ELS
+// VISUAL_R = album thumbnails within n units of the camera are fully transparent; fully opaque at 0
+const AUDIO_R  = 30;
+const VISUAL_R = 80;
+
+let _proxFrame = 0;
+
+let listenStart = Date.now(), lastNearId = null;
+
+function updateProximity() {
+  // Proximity check throttled to every other frame — too expensive to run every frame
+  _proxFrame++;
+  if (_proxFrame % 2 !== 0) return;
+
+  const px = camera.position.x, pz = camera.position.z;
+  let nearDist = Infinity, nearEmb = null;
+
+  for (const [id, { thumbMesh, vecMesh, emb }] of planes) {
+    // Use mesh position so audio and visibility respond to where planes actually are, not their destination
+    const dx = thumbMesh.position.x - px, dz = thumbMesh.position.z - pz;
+    const dist = Math.sqrt(dx*dx + dz*dz);
+
+    const prox = Math.max(0, 1 - dist / VISUAL_R);
+
+    thumbMesh.material.opacity = Math.max(0, prox * 0.9);
+    vecMesh.material.opacity = Math.max(0, prox * 0.82);
+
+    if (dist < AUDIO_R) {
+      if (!audioEls.has(id)) startAudio(emb);
+      setVol(id, Math.pow(1 - dist / AUDIO_R, 2));
+    } else if (audioEls.has(id)) stopAudio(id);
+
+    if (dist < nearDist) { nearDist = dist; nearEmb = emb; }
+  }
+
+  if (nearEmb && nearDist < 10 && nearEmb.id !== lastNearId) {
+    if (lastNearId) {
+      reportListen(lastNearId);
+      const prev = embeddings.find(e => e.id === lastNearId);
+      if (prev) sessionTrace.push({ pos_x: prev.pos_x, pos_z: prev.pos_z });
+      if (sessionTrace.length > 50) sessionTrace.shift();
+    }
+    lastNearId = nearEmb.id; listenStart = Date.now();
+    setNowPlaying(nearEmb); currentEmb = nearEmb;
+  }
+}
+
+function reportListen(id) {
+  const emb = embeddings.find(e => e.id === id);
+  fetch('/api/listener/listen', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      session_id: SESSION_ID,
+      embedding_id: id,
+      duration_ms: Date.now() - listenStart,
+      pos_x:   emb ? emb.pos_x : 0,
+      pos_z:   emb ? emb.pos_z : 0,
+      year:    emb ? (emb.year || 0) : 0,
+    })
+  }).then(r => r.json()).then(d => {
+    weights = d.weights || weights;
+    if (d.centroid) updateGhost(d.centroid);
+  });
+}
+
+// ── Ghost plane ────────────────────────────────────────────────
+// Hosts the user's "ghost" centroid in embedding space,
+// modified by user behavior. Displayed as raw data.
+let ghostMesh = null;
+let ghostTarget = new THREE.Vector3(0, 0, 0);
+let sessionTrace = []; // [{pos_x, pos_z}] — displayed as a user trail path
+
+function makeGhostCanvas(centroid) {
+  const c = document.createElement('canvas');
+  c.width = 320; c.height = 180;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 320, 180);
+
+  // Centroid coordinates
+  ctx.font = '10px monospace';
+  ctx.fillStyle = 'rgba(212,207,200,0.9)';
+  ctx.fillText(`[ ${centroid.pos_x.toFixed(1)}, ${centroid.pos_z.toFixed(1)} ] ${currentLayer}`, 6, 30);
+
+  // Separator line
+  ctx.strokeStyle = 'rgba(212,207,200,0.3)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(6, 50); ctx.lineTo(250, 50);
+  ctx.stroke();
+
+  // Year centroid
+  ctx.font = '9px monospace';
+  ctx.fillStyle = 'rgba(176,169,159,0.6)';
+  ctx.fillText(`μ_year: ${centroid.year.toFixed(1)}`, 6, 68);
+
+  // Small dot
+  ctx.beginPath();
+  ctx.arc(10, 100, 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(212,207,200,0.85)';
+  ctx.fill();
+
+  return c;
+}
+
+function updateGhost(centroid) {
+  const GW = PW * 1.6, GH = PH * 1.6; // enlarge the ghost plane for visual effect
+  const geo = new THREE.PlaneGeometry(GW, GH);
+  const canvas = makeGhostCanvas(centroid);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.minFilter = THREE.LinearFilter;
+
+  if (!ghostMesh) {
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex, transparent: true, depthWrite: false,
+      side: THREE.DoubleSide, opacity: 0, fog: false,
+    });
+    ghostMesh = new THREE.Mesh(geo, mat);
+    ghostMesh.rotation.x = 0.12;
+    ghostMesh.rotation.z = 0.06;
+    ghostMesh.position.set(centroid.pos_x, 8, centroid.pos_z);
+    scene.add(ghostMesh);
+  } else {
+    ghostMesh.geometry.dispose();
+    ghostMesh.geometry = geo;
+    ghostMesh.material.map.dispose();
+    ghostMesh.material.map = tex;
+    ghostMesh.material.needsUpdate = true;
+  }
+
+  // Elevated above floor to stay visible
+  ghostTarget.set(centroid.pos_x, 8, centroid.pos_z);
+}
+
+// ── Now playing ───────────────────────────────────────────────
+function setNowPlaying(emb) {
+  document.getElementById('np-thumb').src = emb.thumbnail_url || '';
+  document.getElementById('np-title').textContent = emb.title || '—';
+  const mins = emb.duration ? Math.floor(emb.duration/60) + ':' + String(Math.round(emb.duration%60)).padStart(2,'0') : '—';
+  document.getElementById('np-meta').textContent =
+    `${emb.artist || '—'}  ·  ${emb.year || '—'}  ·  ${mins}`;
+}
+
+// ── Minimap ───────────────────────────────────────────────────
+const mmCanvas = document.getElementById('minimap-canvas');
+const mmCtx = mmCanvas.getContext('2d');
+const MM = 140, MM_SCALE = 0.055;
+
+function buildMinimapOffscreen() {
+  const size = 2000;
+  const oc = document.createElement('canvas');
+  oc.width = size; oc.height = size;
+  const ctx = oc.getContext('2d');
+  ctx.clearRect(0, 0, size, size);
+
+  for (const emb of embeddings) {
+    let wx, wz;
+    if (currentLayer === 'lyrical') {
+      wx = emb.lyric_coords ? emb.lyric_coords[0] : emb.pos_x;
+      wz = emb.lyric_coords ? emb.lyric_coords[1] : emb.pos_z;
+    } else if (currentLayer === 'year') {
+      wx = emb.pos_x;
+      wz = emb.pos_z;
+    } else {
+      wx = emb.audio_coords ? emb.audio_coords[0] : emb.pos_x;
+      wz = emb.audio_coords ? emb.audio_coords[1] : emb.pos_z;
+    }
+    // Map world coords [-1000, 1000] to canvas [0, 2000]
+    const cx = (wx + 1000) / 2000 * size;
+    const cy = (wz + 1000) / 2000 * size;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(176,169,159,1.0)';
+    ctx.fill();
+  }
+
+  minimapOffscreen = oc;
+}
+
+function drawMinimap() {
+  mmCtx.clearRect(0, 0, MM, MM);
+
+  // Draw entire embedding space as static background
+  if (minimapOffscreen) {
+    mmCtx.drawImage(minimapOffscreen, 0, 0, MM, MM);
+  }
+
+  // Session trace
+  if (sessionTrace.length > 1) {
+    mmCtx.beginPath();
+    mmCtx.strokeStyle = 'rgba(212,207,200,0.4)';
+    mmCtx.lineWidth = 1;
+    sessionTrace.forEach((p, i) => {
+      const sx = (p.pos_x + 1000) / 2000 * MM;
+      const sy = (p.pos_z + 1000) / 2000 * MM;
+      i === 0 ? mmCtx.moveTo(sx, sy) : mmCtx.lineTo(sx, sy);
+    });
+    mmCtx.stroke();
+  }
+
+  // Ghost centroid marker
+  if (ghostMesh) {
+    const gx = (ghostTarget.x + 1000) / 2000 * MM;
+    const gz = (ghostTarget.z + 1000) / 2000 * MM;
+    if (gx >= 0 && gx <= MM && gz >= 0 && gz <= MM) {
+      mmCtx.beginPath();
+      mmCtx.arc(gx, gz, 3.5, 0, Math.PI * 2);
+      mmCtx.strokeStyle = 'rgba(212,207,200,0.7)';
+      mmCtx.lineWidth = 1;
+      mmCtx.stroke();
+      mmCtx.beginPath();
+      mmCtx.moveTo(gx - 6, gz); mmCtx.lineTo(gx + 6, gz);
+      mmCtx.moveTo(gx, gz - 6); mmCtx.lineTo(gx, gz + 6);
+      mmCtx.strokeStyle = 'rgba(212,207,200,0.45)';
+      mmCtx.lineWidth = 0.75;
+      mmCtx.stroke();
+    }
+  }
+
+  // Player position on static map
+  const px_mm = (camera.position.x + 1000) / 2000 * MM;
+  const pz_mm = (camera.position.z + 1000) / 2000 * MM;
+
+  // Player dot
+  mmCtx.beginPath();
+  mmCtx.arc(px_mm, pz_mm, 2.5, 0, Math.PI * 2);
+  mmCtx.fillStyle = 'rgba(212,207,200,1)';
+  mmCtx.fill();
+
+  // Direction tick
+  const dx = -Math.sin(yaw) * 8, dy = -Math.cos(yaw) * 8;
+  mmCtx.beginPath();
+  mmCtx.moveTo(px_mm, pz_mm);
+  mmCtx.lineTo(px_mm + dx, pz_mm + dy);
+  mmCtx.strokeStyle = 'rgba(212,207,200,0.8)';
+  mmCtx.lineWidth = 1.5;
+  mmCtx.stroke();
+}
+
+// ── Movement ──────────────────────────────────────────────────
+const keys = {};
+let yaw = 0;
+
+document.addEventListener('keydown', e => {
+  if (document.getElementById('spawn-screen').style.display !== 'none') return;
+  keys[e.code] = true;
+  if (e.code==='Digit1') toggleDerive();
+  if (e.code==='Digit2') triggerNav('detourn');
+  if (e.code==='Digit3') triggerNav('frolic');
+});
+document.addEventListener('keyup', e => { keys[e.code] = false; });
+
+document.addEventListener('mousemove', e => {
+  if (document.pointerLockElement) {
+    yaw -= e.movementX * 0.0018;
+    camera.rotation.y = yaw;
+  }
+});
+
+renderer.domElement.addEventListener('click', () => renderer.domElement.requestPointerLock());
+document.addEventListener('pointerlockchange', () => {
+  document.getElementById('hint').style.opacity = document.pointerLockElement ? '0' : '0.6';
+});
+
+function moveCamera(delta) {
+  if (isWarping) return;
+  const sp = 0.55 * delta * 60;
+  const fwd = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+  const rt  = new THREE.Vector3( Math.cos(yaw), 0, -Math.sin(yaw));
+  if (keys['KeyW']||keys['ArrowUp'])    camera.position.addScaledVector(fwd,  sp);
+  if (keys['KeyS']||keys['ArrowDown'])  camera.position.addScaledVector(fwd, -sp);
+  if (keys['KeyA']||keys['ArrowLeft'])  camera.position.addScaledVector(rt,  -sp);
+  if (keys['KeyD']||keys['ArrowRight']) camera.position.addScaledVector(rt,   sp);
+  camera.position.y = 0;
+  document.getElementById('coords').textContent = `x:${camera.position.x.toFixed(0)}  z:${camera.position.z.toFixed(0)}`;
+}
+
+// ── Stable camera facing anchor ───────────────────────────────
+// Snaps camera to face the destination after warping
+function faceTarget(targetX, targetZ) {
+  const dx = targetX - camera.position.x;
+  const dz = targetZ - camera.position.z;
+  yaw = Math.atan2(-dx, -dz);
+  camera.rotation.y = yaw; // direct assignment respects rotation.order = 'YXZ'
+}
+
+// ── Warp ──────────────────────────────────────────────────────
+// Smoothly moves position only. Facing is applied as a clean snap at arrival via faceTarget
+async function warpTo(destEmb) {
+  if (!destEmb || isWarping) return;
+
+  const fallbackX = currentLayer === 'lyrical' ? (destEmb.lyric_coords?.[0] ?? destEmb.pos_x) : destEmb.pos_x;
+  const fallbackZ = currentLayer === 'lyrical' ? (destEmb.lyric_coords?.[1] ?? destEmb.pos_z) : destEmb.pos_z;
+
+  // Pre-spawn planes around the destination before moving the camera there
+  await prespawnAround(fallbackX, fallbackZ);
+
+  // Use the plane's actual current scene position (reflects current layer).
+  const entry = planes.get(destEmb.id);
+  if (!entry) {
+    console.warn('[warpTo] plane not found even after prespawn:', destEmb.id);
+    return;
+  }
+  const worldX = entry.thumbMesh.position.x;
+  const worldZ = entry.thumbMesh.position.z;
+
+  isWarping = true;
+  const sx = camera.position.x, sz = camera.position.z;
+
+  const STAND_DIST = 22;
+  const dx = worldX - sx, dz = worldZ - sz;
+  const dist = Math.sqrt(dx*dx + dz*dz) || 1;
+  const ex = worldX - (dx / dist) * STAND_DIST;
+  const ez = worldZ - (dz / dist) * STAND_DIST;
+
+  const WARP_MS = 900, t0 = performance.now();
+
+  function step(now) {
+    const t = Math.min((now - t0) / WARP_MS, 1);
+    const e = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    camera.position.x = sx + (ex - sx) * e;
+    camera.position.z = sz + (ez - sz) * e;
+    if (t < 1) {
+      requestAnimationFrame(step);
+    } else {
+      camera.position.x = ex;
+      camera.position.z = ez;
+      faceTarget(worldX, worldZ);
+      isWarping = false;
+      currentEmb = destEmb;
+      setNowPlaying(destEmb);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Typewriter nav status ──────────────────────────────────────
+const NAV_DESCRIPTIONS = {
+  derive:  'drifting toward a different era...',
+  detourn:  'navigating to the opposite embedding of your location...',
+  frolic:  'jumping to a random point in the space...',
+};
+
+let _typewriterTimer = null;
+function showNavStatus(mode) {
+  const el  = document.getElementById('nav-status');
+  const msg = NAV_DESCRIPTIONS[mode] || '';
+  if (!msg) return;
+
+  // Clear any running typewriter
+  if (_typewriterTimer) clearTimeout(_typewriterTimer);
+  el.textContent = '';
+  el.style.opacity = '1';
+
+  let i = 0;
+  function type() {
+    if (i < msg.length) {
+      el.textContent += msg[i++];
+      _typewriterTimer = setTimeout(type, 38);
+    } else {
+      // Hold then fade
+      _typewriterTimer = setTimeout(() => {
+        el.style.opacity = '0';
+        _typewriterTimer = setTimeout(() => { el.textContent = ''; }, 300);
+      }, 2200);
+    }
+  }
+  type();
+}
+
+// ── Navigation ────────────────────────────────────────────────
+// All nav requests include the active layer so the backend uses the matching embedding matrix
+// Computes centroid of k nearest track embeddings for intra-layer navigation
+function getCurrentCentroidIds(k = 12) {
+  const px = camera.position.x, pz = camera.position.z;
+  const sorted = [...planes.values()]
+    .map(({ emb }) => {
+      const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : emb.pos_x;
+      const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : emb.pos_z;
+      return { emb, dist: Math.sqrt((ex - px) ** 2 + (ez - pz) ** 2) };
+    })
+    .sort((a, b) => a.dist - b.dist)
+    .slice(0, k)
+    .map(e => e.emb.id);
+  return sorted;
+}
+
+function triggerNav(mode) {
+  // Console log for debugging nav
+  const ids = getCurrentCentroidIds();
+  console.log('centroid ids:', ids.length, ids.slice(0, 3));
+
+  if (isWarping) {
+    showNavStatus("can't navigate yet, still warping...");
+    return;
+  }
+
+  if (!currentEmb && embeddings.length) currentEmb = embeddings[0];
+  if (!currentEmb) return;
+  showNavStatus(mode);
+  fetch(`/api/nav/${mode}`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ current_ids: getCurrentCentroidIds(), weights, layer: currentLayer })
+  }).then(r=>r.json()).then(data => {
+    const dest = data.destination;
+    if (dest) {
+      // Always resolve world position layer aware, never from server-returned pos_x/pos_z which are always audio coords
+      const fullEmb = embeddings.find(e=>e.id===dest.id) || dest;
+      warpTo(fullEmb);
+    }
+    fetch('/api/listener/nav', { 
+      method:'POST', 
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ 
+        session_id: SESSION_ID, 
+        nav_style: mode,
+      }) 
+    });
+  });
+}
+
+function toggleDerive() { document.getElementById('derive-panel').classList.toggle('visible'); }
+
+document.getElementById('derive-go').addEventListener('click', () => {
+  if (!currentEmb) return;
+  fetch('/api/nav/derive', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      current_ids:  getCurrentCentroidIds(),
+      target_year: parseFloat(document.getElementById('derive-val').value),
+      weights,
+      layer: currentLayer,
+    })
+  }).then(r=>r.json()).then(data => {
+    if (data.destination) warpTo(embeddings.find(e => e.id === data.destination.id) || data.destination);
+  });
+  document.getElementById('derive-panel').classList.remove('visible');
+});
+
+document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+  const m = btn.dataset.mode;
+  if (m==='derive') toggleDerive(); else triggerNav(m);
+}));
+
+document.querySelectorAll('.layer-btn').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.layer-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const layer = btn.dataset.layer;
+  currentLayer = layer;
+  const lyricDiv = document.getElementById('lyric-columns');
+  lyricDiv.style.opacity = layer === 'lyrical' ? '1' : '0';
+  buildMinimapOffscreen();
+
+  // Redraw vector text canvases to reflect new layer coordinates
+  for (const [, entry] of planes) {
+    const newCanvas = makeVectorCanvas(entry.emb);
+    entry.vecMesh.material.map.image = newCanvas;
+    entry.vecMesh.material.map.needsUpdate = true;
+  }
+
+  isWarping = true;  
+  fetch(`/api/world/layers?layer=${layer}`).then(r=>r.json()).then(pos => {
+      // Print for debug
+      const sample = Object.entries(pos).slice(0, 3);
+      console.log('layer positions sample:', JSON.stringify(sample));
+      console.log('first pos_x:', sample[0]?.[1]?.pos_x);
+
+      for (const [id, p] of Object.entries(pos)) {
+        const entry = planes.get(id); if (!entry) continue;
+        entry.emb.pos_x = p.pos_x; entry.emb.pos_z = p.pos_z;
+        entry.targetThumb.set(p.pos_x, 0, p.pos_z);
+        entry.targetVec.x = p.pos_x + (entry.vecMesh.position.x - entry.thumbMesh.position.x);
+        entry.targetVec.z = p.pos_z + (entry.vecMesh.position.z - entry.thumbMesh.position.z);
+      }
+      // Anchor camera to current nearest track's new position after layer switch
+      if (lastNearId && pos[lastNearId]) {
+          const p = pos[lastNearId];
+          camera.position.x = p.pos_x;
+          camera.position.z = p.pos_z + 22;
+          faceTarget(p.pos_x, p.pos_z);
+          prespawnAround(p.pos_x, p.pos_z);
+      }
+      setTimeout(() => { isWarping = false; }, 1500);
+    });
+  fetch('/api/listener/layer', { 
+    method:'POST', 
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ 
+      session_id: SESSION_ID, 
+      layer, 
+      duration_ms: 0,
+    })
+  });
+}));
+
+// ── Position lerp ─────────────────────────────────────────────
+function updatePositions() {
+  for (const [, e] of planes) {
+    e.thumbMesh.position.lerp(e.targetThumb, 0.04);
+    e.vecMesh.position.lerp(e.targetVec, 0.04);
+  }
+  // Ghost drifts slowly to centroid position
+  if (ghostMesh) {
+    ghostMesh.position.lerp(ghostTarget, 0.008);
+    // Ghost always faces camera so it's always readable
+    ghostMesh.rotation.y = yaw;
+    // Always fully opaque
+    if (ghostMesh.material.opacity < 0.72) {
+      ghostMesh.material.opacity = Math.min(0.72, ghostMesh.material.opacity + 0.015);
+    }
+  }
+}
+
+// ── Spawn screen logic ─────────────────────────────────────────
+// Boot sequence: user enters birth year → world loads → camera placed at nostalgia spawn position
+// Spawn option selection
+document.querySelectorAll('.spawn-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    opt.style.borderColor = 'var(--paper)';
+    document.getElementById('param-birth-year').style.display = 'block';
+    document.getElementById('spawn-go').style.display = 'block';
+  });
+});
+
+// Spawn button
+document.getElementById('spawn-go').addEventListener('click', async () => {
+
+  // Switch to loading view
+  document.getElementById('spawn-options').style.display = 'none';
+  document.getElementById('spawn-params').style.display  = 'none';
+  document.getElementById('spawn-go').style.display      = 'none';
+  document.getElementById('spawn-loading').style.display = 'flex';
+
+  const spawnBar = document.getElementById('spawn-bar');
+  const spawnMsg = document.getElementById('spawn-loading-msg');
+
+  // Call spawn API
+  let spawnDest = null;
+  try {
+      spawnMsg.textContent = 'calculating spawn position...';
+      spawnBar.style.width = '10%';
+
+      const birthYear = parseInt(document.getElementById('input-birth-year').value) || 1980;
+      const spawnRes = await fetch('/api/spawn/nostalgia', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ birth_year: birthYear })
+      }).then(r => r.json());
+
+      if (spawnRes && spawnRes.destination && !spawnRes.destination.error) {
+          spawnDest = spawnRes.destination;
+      }
+  } catch (e) {
+      console.warn('Spawn API error:', e);
+  }
+
+    // Load world
+    spawnMsg.textContent = 'loading world...';
+    spawnBar.style.width = '20%';
+    await loadWorld(spawnDest, spawnBar, spawnMsg);
+  });
+
+// ── World loader ───────────────────────────────────────────────
+async function loadWorld(spawnDest, barEl, msgEl) {
+  let page = 0, total = Infinity;
+
+  // Load all track metadata into embeddings[] without spawning any planes.
+  // Planes are spawned by updatePlaneBudget() as the camera moves.
+  while (embeddings.length < total) {
+    const r    = await fetch(`/api/world/embeddings?page=${page}&page_size=200`);
+    const data = await r.json();
+    total = data.total;
+    for (const emb of data.items) { embeddings.push(emb); }
+
+    const pct = 20 + Math.min(78, (embeddings.length / total) * 78);
+    if (barEl) barEl.style.width = pct + '%';
+    if (msgEl) msgEl.textContent = `${embeddings.length} / ${total} tracks`;
+    page++;
+    if (data.items.length < 200) break;
+    await new Promise(r => setTimeout(r, 8));
+  }
+
+  if (spawnDest) {
+    const spawnEmb = embeddings.find(e => e.id === spawnDest.id) || spawnDest;
+    camera.position.set(spawnEmb.pos_x, 0, spawnEmb.pos_z + 22);
+    faceTarget(spawnEmb.pos_x, spawnEmb.pos_z);
+    currentEmb = spawnEmb;
+    setNowPlaying(spawnEmb);
+  } else if (embeddings.length) {
+    const s = embeddings[Math.floor(Math.random() * Math.min(30, embeddings.length))];
+    camera.position.set(s.pos_x, 0, s.pos_z);
+    currentEmb = s; setNowPlaying(s);
+  }
+
+  if (barEl) barEl.style.width = '100%';
+
+  // Fade out spawn screen and start rendering
+  const screen = document.getElementById('spawn-screen');
+  screen.style.transition = 'opacity 1s';
+  screen.style.opacity    = '0';
+  setTimeout(() => {
+    screen.style.display = 'none';
+    // Re-enable canvas pointer events now that the spawn screen is gone
+    renderer.domElement.style.pointerEvents = 'all';
+  }, 1000);
+  animate(0);
+
+  // Prespawn after animation starts so planes appear as the spawn screen fades
+  const startPos = currentEmb || (embeddings.length ? embeddings[0] : null);
+  if (startPos) await prespawnAround(startPos.pos_x, startPos.pos_z);
+  buildMinimapOffscreen();
+  initLyricColumns();
+}
+
+// ── Lyric columns ─────────────────────────────────────────
+const NUM_COLS = 10;
+let _lyricColEls = [];
+let _lyricAssigned = {}; // track_id → column index
+
+function initLyricColumns() {
+  const container = document.getElementById('lyric-columns');
+  container.innerHTML = '';
+  _lyricColEls = [];
+  for (let i = 0; i < NUM_COLS; i++) {
+    const col = document.createElement('div');
+    col.className = 'lyric-col';
+    const inner = document.createElement('div');
+    inner.className = 'lyric-col-inner';
+    col.appendChild(inner);
+    container.appendChild(col);
+    _lyricColEls.push(inner);
+  }
+}
+
+function updateLyricColumns() {
+  if (currentLayer !== 'lyrical') return;
+
+  // Get currently playing track IDs
+  const playing = [...audioEls.keys()];
+
+  // Clear columns no longer playing
+  for (const [id, col] of Object.entries(_lyricAssigned)) {
+    if (!audioEls.has(id)) {
+      _lyricColEls[col].textContent = '';
+      delete _lyricAssigned[id];
+    }
+  }
+
+  // Assign new tracks to free columns
+  const usedCols = new Set(Object.values(_lyricAssigned));
+  for (const id of playing) {
+    if (_lyricAssigned[id] !== undefined) continue;
+    const freeCol = [...Array(NUM_COLS).keys()].find(c => !usedCols.has(c));
+    if (freeCol === undefined) continue;
+    const emb = embeddings.find(e => e.id === id);
+    if (!emb || !emb.lyrics) continue;
+    // Duplicate lyrics so scroll loops seamlessly
+    const text = emb.lyrics + '\n\n' + emb.lyrics;
+    _lyricColEls[freeCol].textContent = text;
+    // Vary scroll speed slightly per column
+    const duration = 60 + freeCol * 8;
+    _lyricColEls[freeCol].style.animationDuration = `${duration}s`;
+    _lyricAssigned[id] = freeCol;
+    usedCols.add(freeCol);
+  }
+}
+
+// ── Render loop ───────────────────────────────────────────────
+let last = 0;
+let _minimapFrame  = 0;
+let _positionFrame = 0;
+let _budgetFrame   = 0;
+function animate(now) {
+  requestAnimationFrame(animate);
+  const delta = Math.min((now - last) / 1000, 0.05);
+  last = now;
+
+  moveCamera(delta);
+
+  // Lerp positions every 3 frames — smooth enough, much cheaper
+  _positionFrame++;
+  if (_positionFrame % 3 === 0) updatePositions();
+
+  updateProximity(); // already throttled to every 2 frames internally
+
+  // Update plane budget to frequent enough to be seamless, cheap enough not to lag
+  _budgetFrame++;
+  if (_budgetFrame % 30 === 0) updatePlaneBudget();
+  if (_budgetFrame % 60 === 0) updateLyricColumns();
+
+  // Minimap iterates all embeddings — throttle to every 6 frames (~10fps)
+  _minimapFrame++;
+  if (_minimapFrame % 6 === 0) drawMinimap();
+
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
