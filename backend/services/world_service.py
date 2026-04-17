@@ -123,22 +123,37 @@ class WorldService:
                 for t in self._track_list}
 
     def _year_spiral_positions(self):
-        """Return coordinates for the year layer — tracks arranged chronologically in a spiral."""
+        """Return coordinates for the year layer — tracks snake across the world in chronological rows.
+        Sorted by year, laid out in alternating left-to-right / right-to-left rows.
+        """
         sorted_tracks = sorted(self._track_list, key=lambda t: t['year'])
         n = len(sorted_tracks)
-        print(f"[year spiral] {n} tracks, max radius: {1000}")
+        num_rows = 10  # number of horizontal lanes
+        tracks_per_row = math.ceil(n / num_rows)
+
+        # World bounds
+        x_min, x_max = -950, 950
+        z_min, z_max = -950, 950
+        z_step = (z_max - z_min) / (num_rows - 1)
+
+        print(f"[year snake] {n} tracks, {num_rows} rows, ~{tracks_per_row} per row")
+
         positions = {}
         for i, t in enumerate(sorted_tracks):
-            angle  = i * 0.3
-            radius = 50 + (i / n) * 950 # scaled
-            if i < 3: # print for debug
-                print(f"[year spiral] i={i}, radius={radius}, pos_x={round(math.cos(angle) * radius, 2)}")
+            row = i // tracks_per_row
+            pos_in_row = i % tracks_per_row
+            # Alternate direction each row
+            if row % 2 == 0:
+                x = x_min + (pos_in_row / (tracks_per_row - 1)) * (x_max - x_min)
+            else:
+                x = x_max - (pos_in_row / (tracks_per_row - 1)) * (x_max - x_min)
+            z = z_min + row * z_step
             positions[t['id']] = {
-                'pos_x': round(math.cos(angle) * radius, 2),
-                'pos_z': round(math.sin(angle) * radius, 2),
+                'pos_x': round(x, 2),
+                'pos_z': round(z, 2),
             }
         return positions
-
+    
     # ── Public API ─────────────────────────────────────────────────────────
 
     def get_embeddings_page(self, page, page_size):

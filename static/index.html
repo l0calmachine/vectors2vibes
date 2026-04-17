@@ -831,25 +831,26 @@ function faceTarget(targetX, targetZ) {
 
 // ── Warp ──────────────────────────────────────────────────────
 // Smoothly moves position only. Facing is applied as a clean snap at arrival via faceTarget
-async function warpTo(destEmb) {
+
+// Returns [x, z] for an embedding in the current layer.
+// audio_coords and lyric_coords are always populated from the initial load.
+// year layer has no dedicated field — pos_x/pos_z is updated to year coords by the layer switch handler.
+function getLayerPos(emb) {
+  if (currentLayer === 'audio')   return [emb.audio_coords?.[0] ?? emb.pos_x, emb.audio_coords?.[1] ?? emb.pos_z];
+  if (currentLayer === 'lyrical') return [emb.lyric_coords?.[0] ?? emb.pos_x, emb.lyric_coords?.[1] ?? emb.pos_z];
+  return [emb.pos_x, emb.pos_z]; // year: pos_x/pos_z updated to year coords by layer switch
+}
+
+function warpTo(destEmb) {
   if (!destEmb || isWarping) return;
 
-  const fallbackX = currentLayer === 'lyrical' ? (destEmb.lyric_coords?.[0] ?? destEmb.pos_x) : destEmb.pos_x;
-  const fallbackZ = currentLayer === 'lyrical' ? (destEmb.lyric_coords?.[1] ?? destEmb.pos_z) : destEmb.pos_z;
-
-  // Pre-spawn planes around the destination before moving the camera there
-  await prespawnAround(fallbackX, fallbackZ);
-
-  // Use the plane's actual current scene position (reflects current layer).
-  const entry = planes.get(destEmb.id);
-  if (!entry) {
-    console.warn('[warpTo] plane not found even after prespawn:', destEmb.id);
-    return;
-  }
-  const worldX = entry.thumbMesh.position.x;
-  const worldZ = entry.thumbMesh.position.z;
+  const [worldX, worldZ] = getLayerPos(destEmb);
 
   isWarping = true;
+
+  // Prespawn concurrently — planes pop in as the camera glides toward them
+  prespawnAround(worldX, worldZ);
+
   const sx = camera.position.x, sz = camera.position.z;
 
   const STAND_DIST = 22;
