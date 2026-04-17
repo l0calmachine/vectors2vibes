@@ -12,17 +12,24 @@ Built with **Three.js** (frontend) + **Python FastAPI** (backend).
 # 1. Clone the repo and install dependencies
 pip install -r requirements.txt
 
-# 2. Add your HF_TOKEN to a .env file in the project root
-echo "HF_TOKEN=your_token_here" > .env
+# 2. Download assets (~82GB)
+python download_assets.py
 
-# 3. Run the server
+# 3. Add your HF_TOKEN and local directory paths to a .env file in the project root
+cat > .env << 'EOF'
+HF_TOKEN=your_token_here
+LOCAL_AUDIO_DIR=/path/to/vectors2vibes/backend/data/audio
+LOCAL_THUMB_DIR=/path/to/vectors2vibes/backend/data/thumbnails
+EOF
+
+# 4. Run the server
 uvicorn server:app --reload
 
-# 4. Open in browser
+# 5. Open in browser
 # http://localhost:8000
 ```
 
-On first run, the server downloads the parquet dataset from HuggingFace and runs UMAP (~3–5 minutes). Subsequent starts load from cache (~1–2 seconds).
+On first run, the server downloads assets from HuggingFace and runs UMAP (~45 minutes). Subsequent starts load from cache & local directories (~1–2 seconds).
 
 ---
 
@@ -32,15 +39,24 @@ On first run, the server downloads the parquet dataset from HuggingFace and runs
 vectors2vibes/
 ├── server.py                        # Server entry point: FastAPI app + uvicorn
 ├── requirements.txt
-├── .env                             # Add your HF_TOKEN here
+├── .env                             # Add your HF_TOKEN and local asset paths here
 │
+├── scripts/
+│   └── download_assets.py           # Run once before first server run 
+|
 ├── static/
 │   └── index.html                   # Three.js frontend
 │
 └── backend/
     ├── data/
-    │   ├── 28-3-2026-both-emeddings.parquet   # Dataset (downloaded from HF on first run)
-    │   └── umap_cache.pkl                      # UMAP output cache (delete to recompute UMAP)
+    |   ├── audio/                   # Audio directory created with download_assets.py 
+    |       └── 1f/                  # Sharded audio directories (downloaded from HF with download_assets.py)
+    |           └── 1f8T3c_oPfA.ogg
+    |   ├── thumbnails/              # Thumbnail directory created with download_assets.py 
+    |       └── 1f/                  # Sharded thumbnail directories (downloaded from HF with download_assets.py)
+    |           └── 1f8T3c_oPfA.webp
+    │   ├── master_dataset.parquet   # Dataset (downloaded from HF on first server run)
+    │   └── umap_cache.pkl           # UMAP output cache (delete to recompute UMAP)
     │
     ├── routers/
     │   ├── world.py                 # /api/world/*     — track metadata + visual layer positions
@@ -104,9 +120,9 @@ On load, the user enters their birth year. The server calculates `birth_year + 1
 
 ## Audio
 
-Audio streams from a private HuggingFace repo via a server proxy (`/api/audio/stream/{track_id}`), which keeps the HF token secure. Tracks within `AUDIO_R` world units of the user start playing, with volume increasing or decreasing by distance. Up to `MAX_AUDIO_ELS` tracks can play simultaneously — when the cap is reached, the quietest track is dropped to avoid overloading the server with too many simultaneous streams.
+Audio downloads from HF repo upon running `download_assets.py`, currently falling back to HF streaming. Tracks within `AUDIO_R` world units of the user start playing, with volume increasing or decreasing by distance. Up to `MAX_AUDIO_ELS` tracks can play simultaneously — when the cap is reached, the quietest track is dropped to avoid overloading the server with too many simultaneous streams.
 
-Thumbnails are streamed from a public HuggingFace repo, also via a server proxy. Both audio and thumbnails are cached (LRU cache) to avoid re-fetching and incurring additional buffer time.
+Thumbnails are downloaded from a public HuggingFace repo, also with an HF streaming fallback. Both audio and thumbnails are cached (LRU cache) to avoid re-fetching and incurring additional buffer time.
 
 ---
 
@@ -120,11 +136,11 @@ The centroid's coordinates shift between audio and lyrical embedding space depen
 
 ## Dataset
 
-- **Source:** `vectors2vibes/28-3-26-both-emeddings` (HuggingFace, public)
+- **Source:** `vectors2vibes/vectors2vibes-discogs-metadata` (HuggingFace, public)
 - **Tracks:** ~22k unique tracks sourced from Discogs dumps
 - **Audio embeddings:** 1024-dim (from audio files)
 - **Lyric embeddings:** 384-dim (from lyrical transcripts)
-- **Audio files:** `vectors2vibes/vectors2vibes-discogs-audio` (HuggingFace, private)
+- **Audio files:** `vectors2vibes/vectors2vibes-discogs-audio` (HuggingFace, private; locally hosted)
 
 ---
 
@@ -143,4 +159,4 @@ The centroid's coordinates shift between audio and lyrical embedding space depen
 
 ## Known Issues / Pending Work
 
-- **Lag** — primary cause is HF streaming. Tune `AUDIO_R`, `MAX_AUDIO_ELS`, `SPAWN_R`, and `MAX_PLANES` in `index.html` to reduce load. Long-term fix: host data locally.
+- **HF_TOKEN**: Needed for initial asset download; should be removed as a streaming fallback once a permanent solution for local hosting is found.
