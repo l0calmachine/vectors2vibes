@@ -9,10 +9,9 @@ Downloads to:
     backend/data/audio/       (vectors2vibes-discogs-audio dataset)
     backend/data/thumbnails/  (vectors2vibes-preprocessed-thumbnails dataset)
 
-Disk space: audio files are ~2–5 MB each; budget ~5–15 GB depending on dataset size.
-Thumbnails are <50 KB each; budget ~1–2 GB.
+Disk space: ~81.3GB audio + ~613MB thumbnails
 
-Re-running is safe — huggingface_hub skips files that are already present and complete.
+Re-running is safe — huggingface_hub skips files that are already complete.
 """
 
 import os
@@ -53,8 +52,8 @@ def download(repo_id, local_dir, description):
 
 
 if __name__ == "__main__":
-    download(AUDIO_REPO, AUDIO_DIR, "audio files (~5–15 GB, takes a while)")
-    download(THUMB_REPO,  THUMB_DIR,  "thumbnail images (~1–2 GB)")
+    download(AUDIO_REPO, AUDIO_DIR, "audio files (~81.3GB, takes a while)")
+    download(THUMB_REPO,  THUMB_DIR,  "thumbnail images (~613MB)")
     print("\nAll assets downloaded.")
     print("Set these env vars before starting the server:")
     print(f"  LOCAL_AUDIO_DIR={AUDIO_DIR}")
