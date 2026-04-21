@@ -117,24 +117,25 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 #minimap { pointer-events: none; }
 #minimap canvas { display: block; }
 
-#derive-panel {
+#derive-panel, #detourn-panel {
   position: absolute; bottom: 18px; left: 18px;
   display: none; flex-direction: column; gap: 6px;
   pointer-events: all; border: 1px solid var(--dim);
   padding: 10px; width: 200px; background: rgba(10,9,8,0.88);
 }
 #derive-panel.visible { display: flex; }
-#derive-panel label { font-size: 10px; color: var(--dim); letter-spacing: 1px; }
-#derive-panel select, #derive-panel input {
+#detourn-panel.visible { display: flex; }
+#derive-panel label, #detourn-panel label { font-size: 10px; color: var(--dim); letter-spacing: 1px; }
+#derive-panel input, #detourn-panel input {
   background: transparent; border: 1px solid var(--dim);
   color: var(--paper); font-size: 10px; padding: 3px 5px; width: 100%;
 }
-#derive-go {
+#derive-go, #detourn-go {
   background: transparent; border: 1px solid var(--faint);
   color: var(--paper); font-size: 13px; padding: 4px;
   cursor: pointer; margin-top: 2px;
 }
-#derive-go:hover { background: rgba(212,207,200,0.08); }
+#derive-go:hover, #detourn-go:hover { background: rgba(212,207,200,0.08); }
 
 /* Now-playing location in bottom-left */
 #now-playing {
@@ -256,7 +257,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   </div>
 
   <div id="spawn-options">
-    <div class="spawn-option" data-mode="nostalgia">
+    <div class="spawn-option" data-mode="year">
       <div class="spawn-option-title">enter a year to vibe with</div>
     </div>
   </div>
@@ -304,7 +305,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
     <div id="nav-controls">
       <button class="nav-btn" data-mode="derive">dérive<span class="key">[1]</span></button>
       <button class="nav-btn" data-mode="detourn">détourn<span class="key">[2]</span></button>
-      <button class="nav-btn" data-mode="frolic">frolic<span class="key">[3]</span></button>
+      <button class="nav-btn" data-mode="frolic">stroll<span class="key">[3]</span></button>
     </div>
     <div id="minimap">
       <canvas id="minimap-canvas" width="140" height="140"></canvas>
@@ -312,9 +313,16 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   </div>
 
   <div id="derive-panel">
-    <label>target year</label>
-    <input id="derive-val" type="number" value="1980" min="1900" max="2030">
+    <label>cosine similarity</label>
+    <input id="derive-val" type="number" value="0.7" min="0" max="1" step="0.05">
+    <div id="derive-range" style="font-size:9px; color:var(--dim); letter-spacing:1px; margin-top:2px;"></div>
     <button id="derive-go">derive →</button>
+  </div>
+
+  <div id="detourn-panel">
+    <label>target year</label>
+    <input id="detourn-val" type="number" value="1980" min="1900" max="2030">
+    <button id="detourn-go">détourn →</button>
   </div>
 
   <div id="hint">click to look around</div>
@@ -978,6 +986,7 @@ document.getElementById('help-dialog-close').addEventListener('click', () => {
 
 document.addEventListener('keydown', e => {
   if (document.getElementById('spawn-screen').style.display !== 'none') return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
   // Escape closes help dialog
   if (e.key === 'Escape') {
@@ -998,8 +1007,8 @@ document.addEventListener('keydown', e => {
 
   keys[e.code] = true;
   if (e.code==='Digit1') toggleDerive();
-  if (e.code==='Digit2') triggerNav('detourn');
-  if (e.code==='Digit3') triggerNav('frolic');
+  if (e.code==='Digit2') toggleDetourn();
+  if (e.code==='Digit3') { document.getElementById('derive-panel').classList.remove('visible'); document.getElementById('detourn-panel').classList.remove('visible'); triggerNav('frolic'); }
 });
 document.addEventListener('keyup', e => { keys[e.code] = false; });
 
@@ -1090,7 +1099,7 @@ function warpTo(destEmb) {
 const NAV_DESCRIPTIONS = {
   derive:  'drifting toward a different era...',
   detourn:  'navigating to the opposite embedding of your location...',
-  frolic:  'jumping to a random point in the space...',
+  frolic:  'strolling to a random point in the space...',
 };
 
 let _typewriterTimer = null;
@@ -1181,26 +1190,52 @@ function triggerNav(mode) {
   });
 }
 
-function toggleDerive() { document.getElementById('derive-panel').classList.toggle('visible'); }
+function toggleDerive()  { document.getElementById('derive-panel').classList.toggle('visible');  document.getElementById('detourn-panel').classList.remove('visible'); }
+function toggleDetourn() { document.getElementById('detourn-panel').classList.toggle('visible'); document.getElementById('derive-panel').classList.remove('visible'); }
 
 document.getElementById('derive-go').addEventListener('click', () => {
   if (!currentEmb) return;
   fetch('/api/nav/derive', { method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      current_ids:  getCurrentCentroidIds(),
-      target_year: parseFloat(document.getElementById('derive-val').value),
+      current_ids:      getCurrentCentroidIds(),
+      similarity_input: parseFloat(document.getElementById('derive-val').value),
+      weights,
+      layer: currentLayer,
+    })
+  }).then(r=>r.json()).then(data => {
+    if (data.destination) warpTo(embeddings.find(e => e.id === data.destination.id) || data.destination);
+    if (data.sim_min != null) {
+      const input = document.getElementById('derive-val');
+      input.min  = data.sim_min;
+      input.max  = data.sim_max;
+      input.step = 0.01;
+      document.getElementById('derive-range').textContent =
+        `range ${data.sim_min.toFixed(2)} – ${data.sim_max.toFixed(2)}`;
+    }
+  });
+  document.getElementById('derive-panel').classList.remove('visible');
+});
+
+document.getElementById('detourn-go').addEventListener('click', () => {
+  if (!currentEmb) return;
+  fetch('/api/nav/detourn', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      current_ids: getCurrentCentroidIds(),
+      target_year: parseInt(document.getElementById('detourn-val').value),
       weights,
       layer: currentLayer,
     })
   }).then(r=>r.json()).then(data => {
     if (data.destination) warpTo(embeddings.find(e => e.id === data.destination.id) || data.destination);
   });
-  document.getElementById('derive-panel').classList.remove('visible');
+  document.getElementById('detourn-panel').classList.remove('visible');
 });
 
 document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
   const m = btn.dataset.mode;
-  if (m==='derive') toggleDerive(); else triggerNav(m);
+  if (m==='derive') toggleDerive();
+  else if (m==='detourn') toggleDetourn();
+  else triggerNav(m);
 }));
 
 // ── Layer positions (client-side, no network request) ─────────────────────
@@ -1345,10 +1380,10 @@ document.getElementById('spawn-go').addEventListener('click', async () => {
       spawnBar.style.width = '10%';
 
       const birthYear = parseInt(document.getElementById('input-birth-year').value) || 1980;
-      const spawnRes = await fetch('/api/spawn/nostalgia', {
+      const spawnRes = await fetch('/api/spawn/year', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ birth_year: birthYear })
+          body: JSON.stringify({ year: birthYear })
       }).then(r => r.json());
 
       if (spawnRes && spawnRes.destination && !spawnRes.destination.error) {

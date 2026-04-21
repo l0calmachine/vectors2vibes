@@ -30,7 +30,7 @@ _format() was created as a helper function. It returns the track ID dicts, which
 service layer uses to populate metadata and coordinates to the frontend.
 
 Omitted get_genre_centroid() support function and spawn_nostalgia_genre() and spawn_random()
-functions as we narrowed down to one spawning option (spawn_nostalgia()).
+functions as we narrowed down to one spawning option (spawn_year()).
 
 """
 
@@ -79,30 +79,29 @@ class SpawnService:
 
     # ── Spawn options ─────────────────────────────────────────────────────
 
-    def spawn_nostalgia(self, birth_year):
-        """Spawn at the centroid of the user's nostalgia year."""
+    def spawn_year(self, target_year):
+        """Spawn at the centroid of the given year."""
         emb_svc = self.emb_svc
 
-        nostalgia_year = birth_year + 15
         year_window    = 2
-        # Notebook used a DataFrame and pandas methods to find the nostalgia_year.
+        # Notebook used a DataFrame and pandas methods to find the target_year.
         # Converted to a Python operation, compatible with the service layer.
         available      = set(emb_svc.years)
-        mask = any(abs(y - nostalgia_year) <= year_window for y in available)
+        mask = any(abs(y - target_year) <= year_window for y in available)
         if mask:
-            year = nostalgia_year
+            year = target_year
         else:
-            year = min(available, key=lambda y: abs(y - nostalgia_year))
+            year = min(available, key=lambda y: abs(y - target_year))
 
         # Notebook picked a random index into len(neighbours), not neighbours itself.
-        position  = self.get_year_centroid(year)
+        position   = self.get_year_centroid(year)
         neighbours = self.neighbourhood_songs(position, k=12)
-        dest_id   = rnd.choice(neighbours)
+        dest_id    = rnd.choice(neighbours)
 
         # Added print for debugging
-        print(f"[spawn] birth_year={birth_year}, nostalgia_year={nostalgia_year}, selected_year={year}, dest_id={dest_id}")
+        print(f"[spawn] target_year={target_year}, selected_year={year}, dest_id={dest_id}")
         return {
-            'spawn_mode':     'nostalgia',
-            'nostalgia_year': int(year),
-            'destination':    self._format(dest_id),
+            'spawn_mode':  'year',
+            'target_year': int(year),
+            'destination': self._format(dest_id),
         }
