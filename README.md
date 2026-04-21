@@ -1,6 +1,6 @@
 # vectors2vibes
 
-An immersive 3D world allowing users to explore the audio and lyrical embedding space of ~22k music tracks, made navigable as a 2D ground plane with UMAP reduction. Users are encouraged to explore the space unusually: dériving, détourning, and frolicing amongst cacophonical neighborhoods. What do these sonic neighborhoods reveal (or obscure) about machinic listening?
+An immersive 3D world allowing users to explore the audio and lyrical embedding space of ~24k music tracks, made navigable as a 2D ground plane with UMAP reduction. Users are encouraged to explore the space unusually: dériving, détourning, and frolicing amongst cacophonical neighborhoods. What do these sonic neighborhoods reveal (or obscure) about machinic listening?
 
 Built with **Three.js** (frontend) + **Python FastAPI** (backend).
 
@@ -13,7 +13,7 @@ Built with **Three.js** (frontend) + **Python FastAPI** (backend).
 pip install -r requirements.txt
 
 # 2. Download assets (~82GB)
-python download_assets.py
+python scripts/download_assets.py
 
 # 3. Add your HF_TOKEN and local directory paths to a .env file in the project root
 cat > .env << 'EOF'
@@ -29,7 +29,15 @@ uvicorn server:app --reload
 # http://localhost:8000
 ```
 
-On first run, the server downloads assets from HuggingFace and runs UMAP (~45 minutes). Subsequent starts load from cache & local directories (~1–2 seconds).
+On first run, the server runs UMAP reduction (~45 minutes). Subsequent starts load from cache (~1–2 seconds).
+
+**Asset serving modes** (set in `.env`, first match wins):
+
+| Mode | Env var | Notes |
+|------|---------|-------|
+| Local disk | `LOCAL_AUDIO_DIR`, `LOCAL_THUMB_DIR` | Fastest; run `scripts/download_assets.py` first |
+| Raspberry Pi | `PI_BASE_URL=http://<pi-ip>:8080` | Browser streams directly from Pi via 302 redirect |
+| HuggingFace proxy | `HF_TOKEN` | Default fallback; server proxies from HF, token stays server-side |
 
 ---
 
@@ -42,7 +50,8 @@ vectors2vibes/
 ├── .env                             # Add your HF_TOKEN and local asset paths here
 │
 ├── scripts/
-│   └── download_assets.py           # Run once before first server run 
+│   ├── download_assets.py           # Download audio + thumbnails from HF
+│   └── tune_umap_neighbors.py       # UMAP n_neighbors hyperparameter search
 |
 ├── static/
 │   └── index.html                   # Three.js frontend
@@ -62,8 +71,8 @@ vectors2vibes/
     │   ├── world.py                 # /api/world/*     — track metadata + visual layer positions
     │   ├── navigation.py            # /api/nav/*       — derive, detourn, frolic navigational styles
     │   ├── listener.py              # /api/listener/*  — behavior tracking; drives ghost centroid
-    │   ├── audio.py                 # /api/audio/*     — HF audio proxy + LRU cache
-    │   ├── thumbnails.py            # /api/thumb/*     — album thumbnail proxy + cache
+    │   ├── audio.py                 # /api/audio/*     — local / Pi / HF proxy serving
+    │   ├── thumbnails.py            # /api/thumb/*     — local / Pi / HF proxy serving
     │   └── spawn.py                 # /api/spawn/*     — nostalgia spawn
     │
     └── services/
@@ -90,9 +99,9 @@ The same tracks can be viewed in three spatial layouts, switchable via the visua
 
 | Layer   | Layout                                                          |
 |---------|-----------------------------------------------------------------|
-| audio   | UMAP on 1024-dim audio embeddings — tracks grouped by sound     |
-| lyrical | UMAP on 384-dim lyric embeddings — tracks grouped by semantics  |
-| year    | Chronological — tracks arranged by release year                 |
+| audio    | UMAP on 1024-dim audio embeddings — tracks grouped by sound              |
+| lyrical  | UMAP on 384-dim lyric embeddings — tracks grouped by semantics           |
+| combined | UMAP on 512-dim combined embeddings — blend of audio + lyrical structure |
 
 Switching layers animates all planes from their old positions to their new ones.
 
@@ -120,9 +129,9 @@ On load, the user enters their birth year. The server calculates `birth_year + 1
 
 ## Audio
 
-Audio downloads from HF repo upon running `download_assets.py`, currently falling back to HF streaming. Tracks within `AUDIO_R` world units of the user start playing, with volume increasing or decreasing by distance. Up to `MAX_AUDIO_ELS` tracks can play simultaneously — when the cap is reached, the quietest track is dropped to avoid overloading the server with too many simultaneous streams.
+Tracks within `AUDIO_R` world units of the user start playing, with volume increasing or decreasing by distance. Up to `MAX_AUDIO_ELS` tracks can play simultaneously — when the cap is reached, the quietest track is dropped.
 
-Thumbnails are downloaded from a public HuggingFace repo, also with an HF streaming fallback. Both audio and thumbnails are cached (LRU cache) to avoid re-fetching and incurring additional buffer time.
+Audio and thumbnails are served in one of three modes (see Quick Start for configuration). In HF proxy mode, both are cached server-side (LRU) to reduce repeat fetch latency.
 
 ---
 
@@ -137,10 +146,12 @@ The centroid's coordinates shift between audio and lyrical embedding space depen
 ## Dataset
 
 - **Source:** `vectors2vibes/vectors2vibes-discogs-metadata` (HuggingFace, public)
-- **Tracks:** ~22k unique tracks sourced from Discogs dumps
+- **Tracks:** ~24k unique tracks sourced from Discogs dumps
 - **Audio embeddings:** 1024-dim (from audio files)
-- **Lyric embeddings:** 384-dim (from lyrical transcripts)
-- **Audio files:** `vectors2vibes/vectors2vibes-discogs-audio` (HuggingFace, private; locally hosted)
+- **Lyric embeddings:** 384-dim (from transcribed lyrics)
+- **Combined embeddings:** 512-dim (audio + lyrical blend)
+- **Audio files:** `vectors2vibes/vectors2vibes-discogs-audio` (HuggingFace, private)
+- **Thumbnails:** `vectors2vibes/vectors2vibes-preprocessed-thumbnails` (HuggingFace, public)
 
 ---
 
@@ -153,10 +164,11 @@ The centroid's coordinates shift between audio and lyrical embedding space depen
 | [1]                | dérive                        |
 | [2]                | détourn                       |
 | [3]                | frolic                        |
-| Layer buttons      | Switch between audio/lyrical/year layouts |
+| Layer buttons      | Switch between audio/lyrical/combined layouts |
 
 ---
 
 ## Known Issues / Pending Work
 
-- **HF_TOKEN**: Needed for initial asset download; should be removed as a streaming fallback once a permanent solution for local hosting is found.
+- **Pi external access**: Caddy static server runs on the Pi but may require firewall/router configuration to be reachable from outside the local network.
+- **Audio rsync to Pi**: ~82GB transfer — run `rsync -avz --progress backend/data/audio/ pi:/mnt/hdd/vectors2vibes/audio/` when ready.
