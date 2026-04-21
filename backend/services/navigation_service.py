@@ -74,6 +74,7 @@ class NavigationService:
         }
 
 
+<<<<<<< HEAD
     # ── Helpers ───────────────────────────────────────────────────────────────
 
     def _centroid_umap(self, indices, layer):
@@ -102,6 +103,21 @@ class NavigationService:
         if not (-1 <= similarity_input <= 1):
             raise ValueError("similarity_input must be between -1 and 1")
 
+=======
+    # ── Navigation functions ─────────────────────────────────────────────────
+    # Updated Derive as based on input cosine similarity, not year.
+    #NB: prompting for similarity_input requires support.
+    def derive(self, current_ids, similarity_input, weights=None, layer='audio', tolerance=0.05):
+        """
+        Drift away from the current position based on a target cosine similarity.
+        similarity_input: float between -1 and 1
+                          positive values drift toward similar songs
+                          negative values drift toward dissimilar songs
+        """
+        if not (-1 <= similarity_input <= 1):
+            raise ValueError("similarity_input must be between -1 and 1")
+
+>>>>>>> 5ee8168bcda48affe0fdb193ff5941c93272a3a6
         emb_svc = self.emb_svc
 
         # Establish centroid as position from current track IDs
@@ -133,8 +149,11 @@ class NavigationService:
             'mode':             'derive',
             'similarity_input': similarity_input,
             'destination':      self._format_result(dest),
+<<<<<<< HEAD
             'centroid_umap':    self._centroid_umap(indices, layer),
             'similarity':       self._nav_similarity(position, dest_idx, layer),
+=======
+>>>>>>> 5ee8168bcda48affe0fdb193ff5941c93272a3a6
         }
 
     # Updated Detourn functionality to jump to the centroid of a target year's songs.
@@ -159,6 +178,7 @@ class NavigationService:
         dest_id = emb_svc.get_id_at(int(np.argmax(sims)))
         dest = self.world.get_by_id(dest_id)
 
+<<<<<<< HEAD
         dest_idx = int(np.argmax(sims))
         return {
             'mode':          'detourn',
@@ -166,6 +186,12 @@ class NavigationService:
             'destination':   self._format_result(dest),
             'centroid_umap': self._centroid_umap(indices, layer),
             'similarity':    self._nav_similarity(position, dest_idx, layer),
+=======
+        return {
+            'mode':        'detourn',
+            'target_year': target_year,
+            'destination': self._format_result(dest),
+>>>>>>> 5ee8168bcda48affe0fdb193ff5941c93272a3a6
         }
 
     # Changed Frolic to Stroll.
@@ -194,9 +220,13 @@ class NavigationService:
         dest_id = emb_svc.get_id_at(int(random_idx))
         dest = self.world.get_by_id(dest_id)
 
+<<<<<<< HEAD
         return {
             'mode':          'stroll',
             'destination':   self._format_result(dest),
             'centroid_umap': self._centroid_umap(indices, layer),
             'similarity':    self._nav_similarity(position, int(random_idx), layer),
         }
+=======
+        return {'mode': 'stroll', 'destination': self._format_result(dest)}
+>>>>>>> 5ee8168bcda48affe0fdb193ff5941c93272a3a6
