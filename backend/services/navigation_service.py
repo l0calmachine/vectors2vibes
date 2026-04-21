@@ -25,7 +25,7 @@ service layer uses to populate metadata and coordinates to the frontend.
 
 """
 
-import random
+import random   
 
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -74,6 +74,7 @@ class NavigationService:
         }
 
 
+<<<<<<< HEAD
     # ── Helpers ───────────────────────────────────────────────────────────────
 
     def _centroid_umap(self, indices, layer):
@@ -90,74 +91,117 @@ class NavigationService:
         return round(float(sim), 4)
 
     # ── Navigation functions ─────────────────────────────────────────────────
+    # Updated Derive as based on input cosine similarity, not year.
+    #NB: prompting for similarity_input requires support.
+    def derive(self, current_ids, similarity_input, weights=None, layer='audio', tolerance=0.05):
+        """
+        Drift away from the current position based on a target cosine similarity.
+        similarity_input: float between -1 and 1
+                          positive values drift toward similar songs
+                          negative values drift toward dissimilar songs
+        """
+        if not (-1 <= similarity_input <= 1):
+            raise ValueError("similarity_input must be between -1 and 1")
 
-    # Added user behavior weights and layer aware arguments
-    def derive(self, current_ids, target_year, step_size=0.1, weights=None, layer='audio'):
-        """Drift position toward a target year's centroid."""
+=======
+    # ── Navigation functions ─────────────────────────────────────────────────
+    # Updated Derive as based on input cosine similarity, not year.
+    #NB: prompting for similarity_input requires support.
+    def derive(self, current_ids, similarity_input, weights=None, layer='audio', tolerance=0.05):
+        """
+        Drift away from the current position based on a target cosine similarity.
+        similarity_input: float between -1 and 1
+                          positive values drift toward similar songs
+                          negative values drift toward dissimilar songs
+        """
+        if not (-1 <= similarity_input <= 1):
+            raise ValueError("similarity_input must be between -1 and 1")
+
+>>>>>>> 5ee8168bcda48affe0fdb193ff5941c93272a3a6
         emb_svc = self.emb_svc
 
-        # Added to establish centroid as position
-        indices = [emb_svc.get_idx(id) for id in current_ids if emb_svc.get_idx(id) is not None]
-        matrix = emb_svc.get_embeddings_matrix(layer)
-        position = np.mean(matrix[indices], axis=0)
-
-        target = self.get_year_centroid(target_year, layer)
-        # Added fallback in case user input year doesn't exist in dataset
-        if target is None:
-            available = sorted(set(emb_svc.years), key=lambda y: abs(y - target_year))
-            target = self.get_year_centroid(available[0], layer)
-
-        direction = target - position
-        direction /= np.linalg.norm(direction)
-        new_position = position + step_size * direction
-
-        # Added to resolve new_position to the closest track ID
-        sims = cosine_similarity([new_position], emb_svc.get_embeddings_matrix(layer))[0]
-        dest_id = emb_svc.get_id_at(int(np.argmax(sims)))
-        dest = self.world.get_by_id(dest_id) 
-
-        dest_idx = int(np.argmax(sims))
-        return {
-            'mode':          'derive',
-            'target_year':   target_year,
-            'destination':   self._format_result(dest),
-            'centroid_umap': self._centroid_umap(indices, layer),
-            'similarity':    self._nav_similarity(position, dest_idx, layer),
-        }
-
-    # Added user behavior weights and layer aware arguments
-    def detourn(self, current_ids, weights=None, layer='audio'):
-        """Jump to the song with the lowest cosine similarity to the current position."""
-        # Print for debug
-        print(f"[detourn] layer={layer}, current_ids={current_ids[:3]}")
-        
-        emb_svc = self.emb_svc
-
-        # Added to establish centroid as position
+        # Establish centroid as position from current track IDs
         indices = [emb_svc.get_idx(id) for id in current_ids if emb_svc.get_idx(id) is not None]
         matrix = emb_svc.get_embeddings_matrix(layer)
         position = np.mean(matrix[indices], axis=0)
 
         sims = cosine_similarity([position], matrix)[0]
-        furthest_idx = np.argmin(sims)
 
-        # Added to resolve new_position to the closest track ID 
-        dest_id = emb_svc.get_id_at(int(furthest_idx))
+        # Find candidates within tolerance range of the target similarity
+        lower = similarity_input - tolerance
+        upper = similarity_input + tolerance
+        candidate_indices = [i for i, s in enumerate(sims) if lower <= s <= upper]
+
+        if len(candidate_indices) > 5:
+            candidate_indices = np.random.choice(candidate_indices, size=5, replace=False).tolist()
+
+        if candidate_indices:
+            # Randomly select one candidate from within the range
+            chosen_idx = int(np.random.choice(candidate_indices))
+        else:
+            # Fallback: find the song whose similarity is closest to the input
+            chosen_idx = int(np.argmin(np.abs(sims - similarity_input)))
+
+        dest_id = emb_svc.get_id_at(chosen_idx)
         dest = self.world.get_by_id(dest_id)
-        
+
         return {
-            'mode':          'detourn',
-            'destination':   self._format_result(dest),
-            'centroid_umap': self._centroid_umap(indices, layer),
-            'similarity':    self._nav_similarity(position, int(furthest_idx), layer),
+            'mode':             'derive',
+            'similarity_input': similarity_input,
+            'destination':      self._format_result(dest),
+<<<<<<< HEAD
+            'centroid_umap':    self._centroid_umap(indices, layer),
+            'similarity':       self._nav_similarity(position, dest_idx, layer),
+=======
+>>>>>>> 5ee8168bcda48affe0fdb193ff5941c93272a3a6
         }
 
-    # Added user behavior weights and layer aware arguments
-    def frolic(self, current_ids, weights=None, layer='audio'):
-        """Frolic to a random song that is not too similar to the current position."""
+    # Updated Detourn functionality to jump to the centroid of a target year's songs.
+    def detourn(self, current_ids, target_year, weights=None, layer='audio'):
+        """
+        Transport the user to the centroid of a target year's songs.
+        """
+        emb_svc = self.emb_svc
+        matrix = emb_svc.get_embeddings_matrix(layer)
+
+        # Find closest available year if exact year not in dataset
+        available_years = list(set(emb_svc.years))
+        if target_year in available_years:
+            year = target_year
+        else:
+            year = min(available_years, key=lambda y: abs(y - target_year))
+
+        new_position = self.get_year_centroid(year, layer)
+
+        # Resolve centroid to nearest track
+        sims = cosine_similarity([new_position], matrix)[0]
+        dest_id = emb_svc.get_id_at(int(np.argmax(sims)))
+        dest = self.world.get_by_id(dest_id)
+
+<<<<<<< HEAD
+        dest_idx = int(np.argmax(sims))
+        return {
+            'mode':          'detourn',
+            'target_year':   target_year,
+            'destination':   self._format_result(dest),
+            'centroid_umap': self._centroid_umap(indices, layer),
+            'similarity':    self._nav_similarity(position, dest_idx, layer),
+=======
+        return {
+            'mode':        'detourn',
+            'target_year': target_year,
+            'destination': self._format_result(dest),
+>>>>>>> 5ee8168bcda48affe0fdb193ff5941c93272a3a6
+        }
+
+    # Changed Frolic to Stroll.
+    def stroll(self, current_ids, weights=None, layer='audio'):
+        """
+        Stroll to a random song that is not too similar to the current position.
+        """
         emb_svc = self.emb_svc
 
-        # Added to establish centroid as position
+        # Establish centroid as position from current track IDs
         indices = [emb_svc.get_idx(id) for id in current_ids if emb_svc.get_idx(id) is not None]
         matrix = emb_svc.get_embeddings_matrix(layer)
         position = np.mean(matrix[indices], axis=0)
@@ -165,19 +209,24 @@ class NavigationService:
         random_idx = np.random.randint(len(emb_svc.ids))
         sim = cosine_similarity([position], [matrix[random_idx]])[0][0]
 
+        attempts = 0
         while np.array_equal(matrix[random_idx], position) or sim > 0.9:
+            if attempts >= 100:
+                raise ValueError("Could not find a dissimilar enough song — try raising the similarity threshold.")
             random_idx = np.random.randint(len(emb_svc.ids))
             sim = cosine_similarity([position], [matrix[random_idx]])[0][0]
+            attempts += 1
 
-        # Added to resolve new_position to the closest track ID 
         dest_id = emb_svc.get_id_at(int(random_idx))
         dest = self.world.get_by_id(dest_id)
-        
+
+<<<<<<< HEAD
         return {
-            'mode':          'frolic',
+            'mode':          'stroll',
             'destination':   self._format_result(dest),
             'centroid_umap': self._centroid_umap(indices, layer),
             'similarity':    self._nav_similarity(position, int(random_idx), layer),
         }
-
-
+=======
+        return {'mode': 'stroll', 'destination': self._format_result(dest)}
+>>>>>>> 5ee8168bcda48affe0fdb193ff5941c93272a3a6
