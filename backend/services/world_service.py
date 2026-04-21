@@ -6,7 +6,7 @@ Coordinates (x,z) are UMAP-derived by EmbeddingService from audio/lyrical embedd
 
 Visual layers:
   'audio'   → UMAP on audio_embedding  (1024-dim)
-  'lyrical' → UMAP on lyric_embedding  (384-dim)
+  'lyrical' → UMAP on lyric_embeddings  (384-dim)
   'year'    → chronological spiral (metadata-based, no embedding)
 
 """
@@ -88,14 +88,15 @@ class WorldService:
                 'title':         str(row.get('track_title', f'Track {i}')),
                 'artist':        artist,
                 'year':          year,
-                'lyrics':        str(row.get('lyrics', '')),
+                'lyrics':        str(row.get('transcribed_lyrics', '')),
                 'duration':      duration,
                 'youtube_url':   str(row.get('webpage_url', f'https://www.youtube.com/watch?v={track_id}')),
                 'thumbnail_url': f'/api/thumb/{track_id}',
                 'file_path':     str(row.get('file_path', '')),
                 'genre':         genre,
-                'audio_coords':  [round(float(pos_x), 1), round(float(pos_z), 1)],
-                'lyric_coords':  [round(float(emb_svc.lyric_coords[idx, 0]), 1), round(float(emb_svc.lyric_coords[idx, 1]), 1)],
+                'audio_coords':    [round(float(pos_x), 1), round(float(pos_z), 1)],
+                'lyric_coords':    [round(float(emb_svc.lyric_coords[idx, 0]), 1), round(float(emb_svc.lyric_coords[idx, 1]), 1)],
+                'combined_coords': [round(float(emb_svc.combined_coords[idx, 0]), 1), round(float(emb_svc.combined_coords[idx, 1]), 1)],
                 'pos_x':         pos_x,
                 'pos_z':         pos_z,
             }
@@ -123,22 +124,37 @@ class WorldService:
                 for t in self._track_list}
 
     def _year_spiral_positions(self):
-        """Return coordinates for the year layer — tracks arranged chronologically in a spiral."""
+        """Return coordinates for the year layer — tracks snake across the world in chronological rows.
+        Sorted by year, laid out in alternating left-to-right / right-to-left rows.
+        """
         sorted_tracks = sorted(self._track_list, key=lambda t: t['year'])
         n = len(sorted_tracks)
-        print(f"[year spiral] {n} tracks, max radius: {1000}")
+        num_rows = 10  # number of horizontal lanes
+        tracks_per_row = math.ceil(n / num_rows)
+
+        # World bounds
+        x_min, x_max = -950, 950
+        z_min, z_max = -950, 950
+        z_step = (z_max - z_min) / (num_rows - 1)
+
+        print(f"[year snake] {n} tracks, {num_rows} rows, ~{tracks_per_row} per row")
+
         positions = {}
         for i, t in enumerate(sorted_tracks):
-            angle  = i * 0.3
-            radius = 50 + (i / n) * 950 # scaled
-            if i < 3: # print for debug
-                print(f"[year spiral] i={i}, radius={radius}, pos_x={round(math.cos(angle) * radius, 2)}")
+            row = i // tracks_per_row
+            pos_in_row = i % tracks_per_row
+            # Alternate direction each row
+            if row % 2 == 0:
+                x = x_min + (pos_in_row / (tracks_per_row - 1)) * (x_max - x_min)
+            else:
+                x = x_max - (pos_in_row / (tracks_per_row - 1)) * (x_max - x_min)
+            z = z_min + row * z_step
             positions[t['id']] = {
-                'pos_x': round(math.cos(angle) * radius, 2),
-                'pos_z': round(math.sin(angle) * radius, 2),
+                'pos_x': round(x, 2),
+                'pos_z': round(z, 2),
             }
         return positions
-
+    
     # ── Public API ─────────────────────────────────────────────────────────
 
     def get_embeddings_page(self, page, page_size):
@@ -159,8 +175,9 @@ class WorldService:
                     'audio_url':      self._resolve_audio(t),
                     'pos_x':          t['pos_x'],
                     'pos_z':          t['pos_z'],
-                    'audio_coords':   t['audio_coords'],
-                    'lyric_coords':   t['lyric_coords'],
+                    'audio_coords':    t['audio_coords'],
+                    'lyric_coords':    t['lyric_coords'],
+                    'combined_coords': t['combined_coords'],
                     'lyrics':         t.get('lyrics'),
                 }
                 for t in slice_
