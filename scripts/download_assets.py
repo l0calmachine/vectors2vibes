@@ -28,9 +28,15 @@ if not HF_TOKEN:
     print("ERROR: HF_TOKEN not set. Add it to your .env file.")
     sys.exit(1)
 
-DATA_DIR = Path(__file__).parent.parent / "backend" / "data"
-AUDIO_DIR = DATA_DIR / "audio"
-THUMB_DIR = DATA_DIR / "thumbnails"
+if os.environ.get("LOCAL_AUDIO_DIR"):
+    AUDIO_DIR = Path(os.environ["LOCAL_AUDIO_DIR"]) / "data/audio"
+else:
+    Path(__file__).parent.parent / "backend" / "data" / "audio"
+
+if os.environ.get("LOCAL_THUMB_DIR"):
+    THUMB_DIR = Path(os.environ["LOCAL_THUMB_DIR"]) / "data/thumb"
+else:
+    Path(__file__).parent.parent / "backend" / "data" / "thumb"
 
 AUDIO_REPO = "vectors2vibes/vectors2vibes-discogs-audio"
 THUMB_REPO  = "vectors2vibes/vectors2vibes-preprocessed-thumbnails"
