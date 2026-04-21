@@ -7,6 +7,9 @@ Falls back to proxying from HuggingFace when it isn't.
 Local path layout mirrors the HF dataset: {LOCAL_THUMB_DIR}/{shard}/{track_id}.webp
 where shard = track_id[:2].
 
+Comment out LOCAL_THUMB_DIR in .env to force HF proxy mode.
+
+
 Used with: GET /api/thumb/{track_id}
 """
 
@@ -16,12 +19,14 @@ from pathlib import Path
 
 import httpx
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import Response, FileResponse
+from fastapi.responses import Response, FileResponse, RedirectResponse
 
 router = APIRouter()
 
-HF_THUMB_BASE  = "https://huggingface.co/datasets/vectors2vibes/vectors2vibes-preprocessed-thumbnails/resolve/main/{shard}/{track_id}.webp"
+HF_THUMB_BASE   = "https://huggingface.co/datasets/vectors2vibes/vectors2vibes-preprocessed-thumbnails/resolve/main/{shard}/{track_id}.webp"
 LOCAL_THUMB_DIR = os.environ.get("LOCAL_THUMB_DIR", "")
+PI_BASE_URL     = os.environ.get("PI_BASE_URL", "").rstrip("/")
+HF_TOKEN        = os.environ.get("HF_TOKEN", "")
 
 # ── LRU thumbnail cache (HF proxy mode only) ──────────────────────────────────
 MAX_CACHED = 2000
@@ -59,6 +64,13 @@ async def get_thumbnail(video_id: str):
             headers={"Cache-Control": "public, max-age=86400"},
         )
 
+    # ── Pi redirect mode
+    if PI_BASE_URL:
+        return RedirectResponse(
+            url=f"{PI_BASE_URL}/thumbnails/{shard}/{video_id}.webp",
+            status_code=302,
+        )
+
     # ── HuggingFace proxy mode ────────────────────────────────────────────────
     if video_id in _missing:
         raise HTTPException(status_code=404, detail="No thumbnail")
@@ -73,9 +85,10 @@ async def get_thumbnail(video_id: str):
         )
 
     url = HF_THUMB_BASE.format(shard=shard, track_id=video_id)
+    headers = {"Authorization": f"Bearer {HF_TOKEN}"} if HF_TOKEN else {}
     async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
         try:
-            r = await client.get(url)
+            r = await client.get(url, headers=headers)
             if r.status_code == 200 and len(r.content) > 500:
                 ct = r.headers.get("content-type", "image/webp")
                 _cache_set(video_id, r.content, ct)
@@ -84,8 +97,9 @@ async def get_thumbnail(video_id: str):
                     media_type=ct,
                     headers={"Cache-Control": "public, max-age=86400"},
                 )
+            print(f"[thumb] HF returned {r.status_code} for {video_id}")
         except Exception as e:
-            print(f"[thumb] fetch error: {e}")
+            print(f"[thumb] fetch error for {video_id}: {e}")
 
     _missing.add(video_id)
     raise HTTPException(status_code=404, detail=f"No thumbnail found for {video_id}")

@@ -7,14 +7,10 @@ STEP 1 — GATHER
     Fully resumable — tracks with an image already saved are skipped.
 
     Run with:
-        python preprocess_thumbnails.py --step gather --source parquet
-        python preprocess_thumbnails.py --step gather --source csv
-        python preprocess_thumbnails.py --step gather --source both
+        python preprocess_thumbnails.py --step gather
 
-    Sources:
-        parquet  — master_dataset.parquet (~14,686 unique tracks)
-        csv      — xml_batch_2000s.csv    (~2,066 tracks)
-        both     — deduplicated union of both
+    Source:
+        parquet  — master_dataset.parquet (~24,691 unique tracks)
 
     Output:
         ~/vectors2vibes/raw_thumbnails/{shard}/{id}.webp
@@ -25,10 +21,6 @@ STEP 2 — FILTER (apply_filter)
     See apply_filter() docstring for full pipeline description.
 
 NOTES
-    Saladin tracks: the script will attempt Discogs and YouTube as normal.
-    If you have personal cover art, drop it manually into
-    raw_thumbnails/{shard}/{id}.webp — existing files are never overwritten.
-
     Required .env keys: DISCOGS_TOKEN, HF_TOKEN
 """
 
@@ -55,7 +47,6 @@ DISCOGS_TOKEN = os.environ.get('DISCOGS_TOKEN', '')
 HF_TOKEN      = os.environ.get('HF_TOKEN', '')
 
 PARQUET_PATH  = Path(__file__).parent / 'backend' / 'data' / 'master_dataset.parquet'
-CSV_PATH      = Path(__file__).parent / 'xml_batch_2000s.csv'
 OUT_DIR       = Path(__file__).parent / 'raw_thumbnails'
 
 DISCOGS_RATE  = 55        # requests per minute (Discogs allows 60 authenticated)
@@ -105,9 +96,6 @@ def parse_id(val) -> str:
     except Exception:
         return ''
 
-
-def is_saladin(artist_val) -> bool:
-    return 'Saladin' in str(artist_val)
 
 
 # ── STEP 1: Gather thumbnail images from Discogs API ──────────────────────────
@@ -175,46 +163,11 @@ def load_parquet_tracks() -> pd.DataFrame:
     return df
 
 
-def load_csv_tracks() -> pd.DataFrame:
-    if not CSV_PATH.exists():
-        print(f"[ERROR] CSV not found at {CSV_PATH}")
-        return pd.DataFrame()
-    df = pd.read_csv(CSV_PATH)
-    print(f"[csv] Loaded {len(df)} rows")
-    return df
-
-
-def combine_sources(source: str) -> pd.DataFrame:
-    """Load and combine track sources, deduplicating on 'id'."""
-    frames = []
-    if source in ('parquet', 'both'):
-        frames.append(load_parquet_tracks())
-    if source in ('csv', 'both'):
-        frames.append(load_csv_tracks())
-
-    if not frames:
-        return pd.DataFrame()
-
-    df = pd.concat(frames, ignore_index=True)
-
-    # Normalise column names — parquet uses 'id', CSV also uses 'id'
-    if 'id' not in df.columns:
-        print("[ERROR] No 'id' column found in data")
-        return pd.DataFrame()
-
-    n_before = len(df)
-    df = df.drop_duplicates(subset='id', keep='first').reset_index(drop=True)
-    n_after = len(df)
-    if n_before != n_after:
-        print(f"[dedup] Removed {n_before - n_after} duplicate IDs")
-
-    print(f"[combined] {n_after} unique tracks to process")
-    return df
 
 
 # ── Main gather step ──────────────────────────────────────────────────────────
 
-def gather(source: str):
+def gather():
     """
     For each track:
       1. Skip if already downloaded
@@ -225,7 +178,7 @@ def gather(source: str):
     if not DISCOGS_TOKEN:
         print("[WARNING] No DISCOGS_TOKEN found in .env — will skip Discogs and use YouTube only")
 
-    df = combine_sources(source)
+    df = load_parquet_tracks()
     if df.empty:
         return
 
@@ -243,7 +196,6 @@ def gather(source: str):
             master_id  = parse_id(row.get('master_id', ''))
             release_id = parse_id(row.get('release_id', ''))
             yt_url     = str(row.get('thumbnail', '')).strip()
-            artist     = str(row.get('release_artist_names', ''))
 
             if not track_id:
                 continue
@@ -302,11 +254,6 @@ def gather(source: str):
     From YouTube:       {youtube_ok}
     Failed (no image):  {failed}
     Saved to:           {OUT_DIR}
-
-    Saladin tracks: check raw_thumbnails/ and
-    manually drop in cover art for the 3 tracks
-    where you have personal images.
-    Filename format: raw_thumbnails/{{shard}}/{{id}}.jpg
     ──────────────────────────────────────────────""")
 
 
@@ -329,7 +276,7 @@ def apply_filter(img_bytes, track_id):
          artifacts. Standard lossy compression.
       4. Contour overlay — edge contours overlaid onto the filtered image.
       5. Noise grain — adds stochastic pixel variance.
-      6. Output as WebP
+      6. Output as WebP at source resolution.
     """
     # Decode image bytes to numpy array
     arr = np.frombuffer(img_bytes, dtype=np.uint8)
@@ -353,21 +300,21 @@ def apply_filter(img_bytes, track_id):
             blocked[y:y+block_size, x:x+block_size] = img[min(y, h-1), min(x, w-1)]
     img = cv2.addWeighted(img, 0.65, blocked, 0.35, 0)
 
-    # Step 3: JPEG DCT compression — frequency-domain blocking artifacts.
+    # Step 4: JPEG DCT compression — frequency-domain blocking artifacts.
     _, compressed = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 8])
     base = cv2.imdecode(compressed, cv2.IMREAD_COLOR)
 
-    # Step 4: Contour overlay — only if edges were detected
+    # Step 5: Contour overlay — only if edges were detected
     ink = np.array([32, 37, 42], dtype=np.uint8)
     mask = edges > 0
     if mask.any():
         base[mask] = cv2.addWeighted(base[mask], 0.5, np.full_like(base[mask], ink), 0.5, 0)
 
-    # Step 5: Noise grain
+    # Step 6: Noise grain
     noise = np.random.randint(-15, 15, base.shape, dtype=np.int16)
     base = np.clip(base.astype(np.int16) + noise, 0, 255).astype(np.uint8)
 
-    # Step 6: Output as WebP
+    # Step 7: Output as WebP
     pil_out = Image.fromarray(cv2.cvtColor(base, cv2.COLOR_BGR2RGB))
     webp_buf = io.BytesIO()
     pil_out.save(webp_buf, format='WEBP', quality=60)
@@ -375,8 +322,10 @@ def apply_filter(img_bytes, track_id):
 
 # ── Parser argument --filter function ──────────────────────────
 
-def filter_all():
-    """Apply the computer vision filter to all gathered thumbnails."""
+def filter_all(force=False):
+    """Apply the computer vision filter to all gathered thumbnails.
+    force=True reprocesses files that already exist in the output directory.
+    """
     raw_dir      = Path(__file__).parent / 'raw_thumbnails'
     filtered_dir = Path(__file__).parent / 'filtered_thumbnails'
     filtered_dir.mkdir(parents=True, exist_ok=True)
@@ -391,7 +340,7 @@ def filter_all():
         track_id = src_path.stem
         out_path = filtered_dir / shard(track_id) / f"{track_id}.webp"
 
-        if out_path.exists():
+        if out_path.exists() and not force:
             skipped += 1
             continue
 
@@ -424,12 +373,12 @@ if __name__ == '__main__':
         help='Pipeline step to run'
     )
     parser.add_argument(
-        '--source', default='both', choices=['parquet', 'csv', 'both'],
-        help='Data source to process (default: both)'
+        '--force', action='store_true',
+        help='Reprocess files that already exist in the output directory'
     )
     args = parser.parse_args()
 
     if args.step == 'gather':
-        gather(args.source)
+        gather()
     elif args.step == 'filter':
-        filter_all()
+        filter_all(force=args.force)

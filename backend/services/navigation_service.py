@@ -17,9 +17,8 @@ Specific changes (changes not specified here are commented inline):
   embeddings              → emb_svc.audio_embs
   position (numpy array)  → current_ids: centroid of k nearest track embeddings
   (from getCurrentCentroidIds, defined in index.html) resolved as the nearest track ID.
-  get_year_centroid()     → layer aware: now uses audio_embs or lyric_embs to match the
-  visual layer (audio/lyrical) by calling get_embeddings_matrix(layer) (defined in embedding_service.py).
-  The year visual layer defaults to audio_embs.
+  get_year_centroid()     → layer aware: now uses audio_embs, lyric_embs, or combined_embs to match the
+  visual layer by calling get_embeddings_matrix(layer) (defined in embedding_service.py).
             
 _format_result() was created as a helper function. It returns the track ID dicts, which the
 service layer uses to populate metadata and coordinates to the frontend.
@@ -75,6 +74,21 @@ class NavigationService:
         }
 
 
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def _centroid_umap(self, indices, layer):
+        """Return precise world-space coords of the mean embedding vector via UMAP transform."""
+        matrix = self.emb_svc.get_embeddings_matrix(layer)
+        position = np.mean(matrix[indices], axis=0)
+        px, pz = self.emb_svc.project_to_world(position, layer)
+        return {'pos_x': round(px, 2), 'pos_z': round(pz, 2)}
+
+    def _nav_similarity(self, origin_position, dest_idx, layer):
+        """Cosine similarity between the origin centroid embedding and the destination track embedding."""
+        matrix = self.emb_svc.get_embeddings_matrix(layer)
+        sim = cosine_similarity([origin_position], [matrix[dest_idx]])[0][0]
+        return round(float(sim), 4)
+
     # ── Navigation functions ─────────────────────────────────────────────────
 
     # Added user behavior weights and layer aware arguments
@@ -102,10 +116,13 @@ class NavigationService:
         dest_id = emb_svc.get_id_at(int(np.argmax(sims)))
         dest = self.world.get_by_id(dest_id) 
 
+        dest_idx = int(np.argmax(sims))
         return {
-            'mode':        'derive',
-            'target_year': target_year,
-            'destination': self._format_result(dest),
+            'mode':          'derive',
+            'target_year':   target_year,
+            'destination':   self._format_result(dest),
+            'centroid_umap': self._centroid_umap(indices, layer),
+            'similarity':    self._nav_similarity(position, dest_idx, layer),
         }
 
     # Added user behavior weights and layer aware arguments
@@ -128,7 +145,12 @@ class NavigationService:
         dest_id = emb_svc.get_id_at(int(furthest_idx))
         dest = self.world.get_by_id(dest_id)
         
-        return {'mode': 'detourn', 'destination': self._format_result(dest)}
+        return {
+            'mode':          'detourn',
+            'destination':   self._format_result(dest),
+            'centroid_umap': self._centroid_umap(indices, layer),
+            'similarity':    self._nav_similarity(position, int(furthest_idx), layer),
+        }
 
     # Added user behavior weights and layer aware arguments
     def frolic(self, current_ids, weights=None, layer='audio'):
@@ -151,6 +173,11 @@ class NavigationService:
         dest_id = emb_svc.get_id_at(int(random_idx))
         dest = self.world.get_by_id(dest_id)
         
-        return {'mode': 'frolic', 'destination': self._format_result(dest)}
+        return {
+            'mode':          'frolic',
+            'destination':   self._format_result(dest),
+            'centroid_umap': self._centroid_umap(indices, layer),
+            'similarity':    self._nav_similarity(position, int(random_idx), layer),
+        }
 
 

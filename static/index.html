@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>vectors2vibes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
 <style>
+
 @font-face {
   font-family: 'CirrusCumulus';
   src: url('/static/CirrusCumulus.woff') format('woff'),
@@ -15,28 +18,82 @@
 :root {
   --paper:  #d4cfc8;
   --ink:    #2a2520;
-  --dim:    #7a7368;
-  --faint:  #b0a99f;
+  --dim:    #b0a99f;
+  --faint:  #c8c2ba;
   --bg:     #0a0908;
 }
-* { font-family: 'CirrusCumulus', monospace; }
+* { font-family: 'CirrusCumulus', monospace; -webkit-text-stroke: 0.4px currentColor; }
 body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: crosshair; }
 #canvas-container { position: fixed; inset: 0; pointer-events: none; }
 
 /* HUD */
-#hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; mix-blend-mode: difference;}
 
 #topleft { position: absolute; top: 16px; left: 18px; line-height: 1.4; }
-#title   { font-size: 13px; letter-spacing: 3px; color: var(--faint); text-transform: lowercase; }
-#coords  { font-size: 9px; color: var(--dim); margin-top: 2px; }
+#title   { font-size: 14px; letter-spacing: 3px; color: var(--faint); text-transform: lowercase; }
+#coords-title      { font-family: 'CirrusCumulus', monospace; font-size: 13px; color: var(--dim); margin-top: 2px; }
+#coords      { font-family: 'Courier New', monospace; font-size: 12px; color: var(--dim); margin-top: 2px; -webkit-text-stroke: 0px;}
+#similarity-title      { font-family: 'CirrusCumulus', monospace;font-size: 13px; color: var(--dim); margin-top: 2px; }
+#similarity  { font-family: 'Courier New', monospace; font-size: 12px; color: var(--dim); margin-top: 1px; -webkit-text-stroke: 0px;}
+
+/* Help trigger (top-right, inside #hud) */
+#help-trigger {
+  position: absolute; top: 16px; right: 18px;
+  font-size: 13px; color: var(--dim); letter-spacing: 2px;
+  pointer-events: none;
+}
+
+/* Help dialog — outside #hud so blend mode doesn't invert it */
+#help-dialog {
+  position: fixed; top: 16px; right: 18px;
+  width: 460px; max-height: 80vh;
+  display: flex; flex-direction: column;
+  background: rgba(10,9,8,0.87); border: 1px solid var(--dim);
+  padding: 18px 22px;
+  z-index: 15;
+  transform-origin: top right;
+  transform: scale(0); opacity: 0;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+  pointer-events: none;
+}
+#help-dialog p { padding-bottom: 10px; }
+#help-dialog a { color: var(--dim); }
+#help-dialog a:hover { color: var(--faint); }
+
+#help-dialog.visible { transform: scale(1); opacity: 1; pointer-events: all; }
+#help-dialog-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(176,169,159,0.2);
+}
+#help-dialog-title { font-family: 'CirrusCumulus', monospace; font-size: 13px; color: var(--dim); letter-spacing: 3px; }
+#help-dialog-close {
+  background: none; border: none; color: var(--dim);
+  font-size: 10px; letter-spacing: 2px; cursor: pointer; padding: 0;
+  -webkit-text-stroke: 0px;
+}
+#help-dialog-close:hover { color: var(--paper); }
+
+#help-dialog-body { font-size: 13px; color: var(--dim); line-height: 1.8; letter-spacing: 1px; overflow-y: auto; flex: 1; scroll-behavior: smooth; }
+#help-dialog-body * { font-family: 'Courier New', monospace; -webkit-text-stroke: 0px; }
+#help-dialog-intro p, #help-dialog-intro i { line-height: 1.5; }
+#help-dialog-subheader { font-family: 'CirrusCumulus', monospace; font-size: 14px; color: var(--dim); line-height: 1.8; letter-spacing: 1px; -webkit-text-stroke: 0.6px; margin-top: 14px; padding-top: 10px; padding-bottom: 10px; border-top: 1px solid rgba(176,169,159,0.2); }
+#help-dialog-body a[href^="#["] { font-family: 'CirrusCumulus', monospace; }
+
+#help-dialog-body::-webkit-scrollbar { width: 2px; padding-left: 4px; }
+#help-dialog-body::-webkit-scrollbar-track { background: transparent; }
+#help-dialog-body::-webkit-scrollbar-thumb { background: rgba(176,169,159,0.2); }
+
+#help-dialog-references { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(176,169,159,0.2) }
+#help-dialog-references p, #help-dialog-references a { font-size: 9px; line-height: 1.1; }
+#help-dialog-formula { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--dim); margin-top: 1px; }
 
 #layers {
-  position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
   display: flex; gap: 2px; pointer-events: all;
 }
 .layer-btn {
   background: transparent; border: 1px solid var(--dim);
-  color: var(--dim); font-size: 11px; letter-spacing: 2px;
+  color: var(--dim); font-size: 13px; letter-spacing: 2px;
   padding: 4px 10px; cursor: pointer;
 }
 .layer-btn:hover, .layer-btn.active { border-color: var(--paper); color: var(--paper); }
@@ -50,7 +107,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 #nav-controls { display: flex; flex-direction: column; gap: 3px; }
 .nav-btn {
   background: transparent; border: 1px solid var(--dim);
-  color: var(--dim); font-size: 13px; letter-spacing: 1px;
+  color: var(--dim); font-size: 14px; letter-spacing: 1px;
   padding: 4px 12px; cursor: pointer; text-align: left; white-space: nowrap;
 }
 .nav-btn:hover { color: var(--paper); border-color: var(--paper); }
@@ -90,8 +147,8 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   image-rendering: pixelated; flex-shrink: 0; opacity: 0.7;
 }
 #np-info  { flex: 1; overflow: hidden; }
-#np-title { font-size: 13px; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 1px; }
-#np-meta  { font-size: 9px; color: var(--dim); margin-top: 3px; }
+#np-title { font-size: 16px; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 1px; }
+#np-meta  { font-size: 13px; color: var(--dim); margin-top: 3px; }
 
 /* ── Spawn landing page ─────────────────────────────────── */
 #spawn-screen {
@@ -101,7 +158,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   padding: 40px;
 }
 #spawn-title { font-size: 18px; color: var(--faint); letter-spacing: 6px; }
-#spawn-subtitle { font-size: 10px; color: var(--dim); letter-spacing: 2px; margin-top: -18px; }
+#spawn-subtitle { font-size: 12px; color: var(--dim); letter-spacing: 2px; margin-top: -18px; }
 
 #spawn-options { display: flex; flex-direction: column; gap: 10px; width: 320px; }
 
@@ -111,13 +168,13 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 }
 .spawn-option:hover { border-color: var(--paper); }
 .spawn-option-title { font-size: 14px; color: var(--paper); letter-spacing: 1px; margin-bottom: 4px; }
-.spawn-option-desc  { font-size: 9px; color: var(--dim); letter-spacing: 1px; line-height: 1.5; }
+.spawn-option-desc  { font-size: 12px; color: var(--dim); letter-spacing: 1px; line-height: 1.5; }
 
 #spawn-params { width: 320px; display: flex; flex-direction: column; gap: 8px; }
-#spawn-params label { font-size: 9px; color: var(--dim); letter-spacing: 1px; }
+#spawn-params label { font-size: 12px; color: var(--dim); letter-spacing: 1px; }
 #spawn-params input, #spawn-params input[type=number] {
   background: transparent; border: 1px solid var(--dim);
-  color: var(--paper); font-size: 11px; padding: 5px 8px; width: 100%;
+  color: var(--paper); font-size: 12px; padding: 5px 8px; width: 100%;
 }
 
 #spawn-go {
@@ -129,18 +186,17 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 
 /* Loading bar shown after birth year chosen */
 #spawn-loading { display: none; flex-direction: column; align-items: center; gap: 12px; }
-#spawn-loading-msg { font-size: 10px; color: var(--dim); letter-spacing: 2px; }
+#spawn-loading-msg { font-size: 11px; color: var(--dim); letter-spacing: 2px; }
 #spawn-bar-wrap { width: 220px; height: 1px; background: var(--dim); }
 #spawn-bar { height: 100%; background: var(--faint); width: 0%; transition: width 0.3s; }
 
 #hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 10px; color: var(--dim); letter-spacing: 2px; pointer-events: none; opacity: 0.6; }
-
 /* Nav action typewriter text */
 #nav-status {
   position: absolute;
   bottom: 52px;
   left: 55%;
-  font-size: 11px; color: var(--faint);
+  font-size: 12px; color: var(--faint);
   letter-spacing: 1px; pointer-events: none;
   opacity: 0; transition: opacity 0.3s;
   white-space: nowrap;
@@ -157,6 +213,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   z-index: 5; /* above canvas, below HUD */
   opacity: 0;
   transition: opacity 1.5s;
+  mix-blend-mode: difference;
 }
 .lyric-col {
   flex: 1;
@@ -174,7 +231,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   position: absolute;
   top: 0;
   font-family: 'Courier New', monospace;
-  font-size: 9px;
+  font-size: 12px;
   line-height: 1.6;
   color: var(--dim);
   opacity: 0.35;
@@ -194,11 +251,13 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 
 <div id="spawn-screen">
   <div id="spawn-title">vectors2vibes</div>
-  <div id="spawn-subtitle">spawn at the centroid of your formative listening years</div>
+  <div id="spawn-subtitle">
+    Against recommendation, this interface invites you to disorient, reassociate, and vibe machinically. You are invited to move beyond 'slavish reference to citations' and enter a sonic EMBEDDING SPACE — a fuzzy relational field of ambiance.
+  </div>
 
   <div id="spawn-options">
     <div class="spawn-option" data-mode="nostalgia">
-      <div class="spawn-option-title">enter your birth year</div>
+      <div class="spawn-option-title">enter a year to vibe with</div>
     </div>
   </div>
 
@@ -223,13 +282,14 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 <div id="hud">
   <div id="topleft">
     <div id="title">vectors2vibes</div>
-    <div id="coords">x:0  z:0</div>
+    <div id="coords-title">neighborhood </div><div id="coords"></div>
+    <div id="similarity-title">cos_sim </div><div id="similarity"></div>
   </div>
 
   <div id="layers">
     <button class="layer-btn active" data-layer="audio">audio</button>
     <button class="layer-btn" data-layer="lyrical">lyrical</button>
-    <button class="layer-btn" data-layer="year">year</button>
+    <button class="layer-btn" data-layer="combined">combined</button>
   </div>
 
   <div id="now-playing">
@@ -259,6 +319,74 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 
   <div id="hint">click to look around</div>
   <div id="nav-status"></div>
+  <div id="help-trigger">--help</div>
+</div>
+
+<div id="help-dialog">
+  <div id="help-dialog-header">
+    <span id="help-dialog-title">--help</span>
+    <button id="help-dialog-close">esc</button>
+  </div>
+  <div id="help-dialog-body">
+    <div id="help-dialog-intro"><p><i>This map does not attempt to trace a classified system of music, nor claim to produce a true machinic reflection of high-dimensional latent space…nor conceptualize some citable vibe-machine…NOR offer an emancipatory blueprint to the “minds” of deep-learning models. Rather, it is a “renovated cartography” <a href="#[1]">[1]</a> – a field which constructs relational meaning from abstraction, alienation, and play. Its representation of embeddings is not exhaustive, yet still provides a “momentary ambience” <a href="#[2]">[2]</a> of their somatic experience.</i></p></div>
+    <div id="help-dialog-controls">
+      <div id="help-dialog-subheader">Controls</div>
+      <p>Move through the world with <span id="help-dialog-formula">WASD</span> keys.</p>
+      <p>Click to look around you; press <span id="help-dialog-formula">esc</span> to regain your cursor.</p>
+      <p>Use number keys to derive <span id="help-dialog-formula">[1]</span>, detourn <span id="help-dialog-formula">[2]</span>, or stroll <span id="help-dialog-formula">[3]</span>. <i><br>(<a href="#help-dialog-navigational-styles">see navigational styles</a>)</i></p>
+    </div>
+    <div id="help-dialog-cartographical-layers">
+      <div id="help-dialog-subheader">Cartographical layers</div>
+      <p>Audio: <span id="help-dialog-formula">UMAP</span> projection of 1024-dimensional audio embeddings.</p>
+      <p>Lyrical: <span id="help-dialog-formula">UMAP</span> projection of 384-dimensional semantic lyric embeddings.</p>
+      <p>Combined: <span id="help-dialog-formula">UMAP</span> projection of 512-dimensional merged audio (weighted at x%) and lyric (weighted at x%) embeddings. <i><br>(<a href="#help-dialog-umap-calculation">see <span id="help-dialog-formula">UMAP</span> calculation</a>)</i></p>
+    </div>
+    <div id="help-dialog-navigational-styles">
+      <div id="help-dialog-subheader">Navigational styles</div>
+      <p>Derive: Playful, but not left to chance – be carried by currents and vortexes of the field <a href="#[3]">[3]</a>. Define a “simple algorithm” <a href="#[4]">[4]</a> with positive/negative <span id="help-dialog-formula">cos_sim</span> value. Pass through space towards a concordant ambiance. What fuzzy thresholds do you observe? Are you drawn back to old habits?</p>
+      <p>Detourn: Reroute classification – construct a new ensemble of chronology <a href="#[4]">[4]</a>, <a href="#[5]">[5]</a>. Input a year to be transported to its sonic neighborhood. Its inhabitants may not be what you expect. Has time developed new meaning?</p>
+      <p>Stroll: Wander aimlessly, without intent <a href="#[3]">[3]</a>.</p>
+    </div>
+    <div id="help-dialog-world-features">
+      <div id="help-dialog-subheader">World features</div>
+      <p>Embedding coordinates: At the site of each embedding, you will find an abstracted cartographic marker – coordinates derived from <span id="help-dialog-formula">UMAP</span> dimension reduction, rounded to the first decimal. <i>(<a href="#help-dialog-umap-calculation">see <span id="help-dialog-formula">UMAP</span> calculation</a>)</i></p>
+      <p>Neighborhood coordinates: Located in the top-left corner of the HUD, find the mean coordinates of the nearest k embeddings between your positions of origin and arrival upon navigating.<br>
+      <span id="help-dialog-formula">p̄ = (1/k) · Σᵢ eᵢ  →  [x, z] = UMAP.transform(p̄)</span></p>
+      <p>
+        Cosine similarity: Below neighborhood coordinates, observe the degree of angular (dis)similarity between your positions of origin and arrival upon navigating. <br>(<a href="#help-dialog-navigational-styles">see navigational styles</a>)<br>
+        <span id="help-dialog-formula">cos_sim(A, B) = (A · B) / (‖A‖ · ‖B‖)</span><br><i>(where cos_sim=1 is the most similar)</i>
+      </p>
+    </div>
+    <div id="help-dialog-umap-calculation">
+      <div id="help-dialog-subheader">UMAP calculation</div>
+      <p>High dimensional embeddings have been projected onto a 2D <span id="help-dialog-formula">UMAP</span> field for human legibility. Parameters have been tuned to preserve as much raw machinic character as possible.</p>
+      <p><span id="help-dialog-formula">WORLD_SCALE=[-1000, 1000]</span> The coordinate field is scaled to account for <span id="help-dialog-formula">UMAP</span>’s small default float range:<br> <span id="help-dialog-formula">[-2.3588107, 10.483603] x [2.4815817, 10.772468]</span></p>
+      <p><span id="help-dialog-formula">n_neighbors=10</span> for audio field and <span id="help-dialog-formula">n_neighbors=20</span> for lyrical field. Tuned based on trustworthiness and continuity scores from <span id="help-dialog-formula">n_neighbors=5→50</span>, comparing <span id="help-dialog-formula">UMAP</span> output and raw embedding fidelity. <i>(see full report)</i></p>
+    </div>
+    <div id="help-dialog-ghost-centroid">
+      <div id="help-dialog-subheader">Ghost centroid (habitual axis)</div>
+      <p>The spectre of your habits, haunting you through temporal space. Shaped by your gestures: dwell time, navigation, and favored cartographies.</p>
+      <p>
+        It is calculated as a weighted centroid:<br>
+        <span id="help-dialog-formula">for i in visited_tracks:<br>
+          &nbsp;&nbsp;w_i = dwell_i · Σ(α_k · sim_k(i))<br>
+        pos_x = Σ(x_i·w_i) / Σ(w_i) = 123.45<br>
+        pos_z = Σ(z_i·w_i) / Σ(w_i) = -67.89<br>
+        year = Σ(yr_i·w_i) / Σ(w_i) = 2003.4<br>
+        α_audio 0.82      α_lyric 0.61<br>
+        α_year 0.44        α_dérive 1.00<br>
+        α_détourn 0.50   α_stroll 0.25</span>
+      </p>
+      <p>In which your time spent dwelling <span id="help-dialog-formula">(dwell_i)</span> on similar embeddings <span id="help-dialog-formula">(sim_k(i))</span> shifts the weights <span id="help-dialog-formula">(α_k)</span> of sonic versus semantic importance; importance of time; intentional versus aimless purpose. Derive exerts an attraction towards the axis, so that drifting remains a practice of resisting one’s established routes (or perhaps embracing them?).</p>
+    </div>
+    <div id="help-dialog-references">
+      <p><span id="[1]">[1]</span> G. Debord, “Introduction to a Critique of Urban Geography,” 1955. <a href="https://www.bopsecrets.org/SI/urbgeog.htm">https://www.bopsecrets.org/SI/urbgeog.htm</a>.</p>
+      <p><span id="[2]">[2]</span> G. Debord, “Report on the Construction of Situations and on the International Situationist Tendency’s Conditions of Organization and Action,” June, 1957. <a href="https://www.bopsecrets.org/SI/report.htm">https://www.bopsecrets.org/SI/report.htm</a>.</p>
+      <p><span id="[3]">[3]</span> G. Debord, “Theory of the Dérive,” 1958. <a href="https://www.bopsecrets.org/SI/2.derive.htm">https://www.bopsecrets.org/SI/2.derive.htm</a>.</p>
+      <p><span id="[4]">[4]</span> A. J. Elias, “Psychogeography, Détournement, Cyberspace,” New Literary History, vol. 41, no. 4, pp. 821–845, Autumn 2010, <a href="https://dx.doi.org/10.1353/nlh.2010.0033">doi: 10.1353/nlh.2010.0033</a>.</p>
+      <p><span id="[5]">[5]</span> G. Debord and G. Wolman, “A User’s Guide to Détournement,” 1956. <a href="https://www.bopsecrets.org/SI/detourn.htm">https://www.bopsecrets.org/SI/detourn.htm</a>.</p>
+    </div>
+  </div>
 </div>
 
 <!-- Three.js load in from Cloudflare -->
@@ -267,8 +395,14 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 const SESSION_ID = 'v2v_' + Math.random().toString(36).slice(2);
 let embeddings = [], currentEmb = null, isWarping = false, weights = {};
 let currentLayer = 'audio';
+// Matches UMAP_N_NEIGHBORS_AUDIO / LYRIC in embedding_service.py
+const LAYER_K = { audio: 10, lyrical: 20, combined: 15 };
 let minimapOffscreen = null;
 let _minimapBuildId = 0;
+
+// Dev mode: append ?dev to the URL to reduce GPU load for development on integrated graphics.
+// Has no effect in production — all values revert to their normal defaults.
+const DEV_MODE = new URLSearchParams(location.search).has('dev');
 
 // ── Scene ──────────────────────────────────────────────────────
 const scene = new THREE.Scene();
@@ -279,7 +413,7 @@ const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 60
 camera.position.set(0, 0, 0);
 camera.rotation.order = 'YXZ';
 
-const renderer = new THREE.WebGLRenderer({ antialias: false });
+const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'low-power' });
 renderer.setPixelRatio(1);
 renderer.setSize(innerWidth, innerHeight);
 document.getElementById('canvas-container').appendChild(renderer.domElement);
@@ -296,9 +430,9 @@ const planes = new Map(); // id → { thumbMesh, vecMesh, emb, targetThumb, targ
 // Planes are created when the camera approaches (spawnEmbedding) and destroyed when it moves away (despawnEmbedding).
 // SPAWN_R < DESPAWN_R creates a buffer zone so planes don't flicker at the boundary.
 // Tune these values if lag persists — lower = less GPU/CPU load but smaller visible neighbourhood
-const SPAWN_R   = 200;  // spawn planes within this radius
-const DESPAWN_R = 350;  // despawn planes beyond this radius
-const MAX_PLANES = 400; // hard cap of loaded planes
+const SPAWN_R    = DEV_MODE ? 60  : 150;
+const DESPAWN_R  = DEV_MODE ? 120 : 250;
+const MAX_PLANES = DEV_MODE ? 30  : 150; // hard cap — tuned for integrated GPU sharing system RAM
 
 // ── Helpers ─────────────────
 function hashId(id) {
@@ -329,7 +463,7 @@ function makeVectorCanvas(emb) {
   c.width = 320; c.height = 80;
   const ctx = c.getContext('2d');
   ctx.clearRect(0, 0, 320, 80);
-  const coords = currentLayer === 'lyrical' ? (emb.lyric_coords || [0,0]) : (emb.audio_coords || [0,0]);
+  const coords = currentLayer === 'lyrical' ? (emb.lyric_coords || [0,0]) : currentLayer === 'combined' ? (emb.combined_coords || [0,0]) : (emb.audio_coords || [0,0]);
   const str = `[ ${coords.join(', ')} ]`;
   ctx.font = '11px "Courier New"';
   ctx.fillStyle = 'rgba(212,207,200,0.78)';
@@ -363,6 +497,8 @@ function spawnEmbedding(emb) {
           emb.thumbnail_url,
           t => {
               t.minFilter = t.magFilter = THREE.NearestFilter;
+              // Dispose fallback texture before replacing — otherwise it stays in VRAM indefinitely
+              if (mat.map) mat.map.dispose();
               mat.map = t;
               mat.needsUpdate = true;
           }
@@ -435,8 +571,8 @@ function updatePlaneBudget() {
   // Spawn any embeddings within SPAWN_R that aren't yet in the scene
   for (const emb of embeddings) {
     if (planes.has(emb.id)) continue;
-    const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : emb.pos_x;
-    const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : emb.pos_z;
+    const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : currentLayer === 'combined' ? (emb.combined_coords?.[0] ?? emb.pos_x) : emb.pos_x;
+    const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : currentLayer === 'combined' ? (emb.combined_coords?.[1] ?? emb.pos_z) : emb.pos_z;
     const dx = ex - px, dz = ez - pz;
     if (Math.sqrt(dx*dx + dz*dz) < SPAWN_R) {
         spawnEmbedding(emb);
@@ -445,8 +581,8 @@ function updatePlaneBudget() {
 
   // Despawn planes beyond DESPAWN_R
   for (const [id, entry] of planes) {
-    const ex = currentLayer === 'lyrical' ? (entry.emb.lyric_coords?.[0] ?? entry.emb.pos_x) : entry.emb.pos_x;
-    const ez = currentLayer === 'lyrical' ? (entry.emb.lyric_coords?.[1] ?? entry.emb.pos_z) : entry.emb.pos_z;
+    const ex = currentLayer === 'lyrical' ? (entry.emb.lyric_coords?.[0] ?? entry.emb.pos_x) : currentLayer === 'combined' ? (entry.emb.combined_coords?.[0] ?? entry.emb.pos_x) : entry.emb.pos_x;
+    const ez = currentLayer === 'lyrical' ? (entry.emb.lyric_coords?.[1] ?? entry.emb.pos_z) : currentLayer === 'combined' ? (entry.emb.combined_coords?.[1] ?? entry.emb.pos_z) : entry.emb.pos_z;
     const dx = ex - px, dz = ez - pz;
     if (Math.sqrt(dx*dx + dz*dz) > DESPAWN_R) {
         despawnEmbedding(id);
@@ -457,10 +593,10 @@ function updatePlaneBudget() {
   
 if (planes.size > MAX_PLANES) {
     const sorted = [...planes.entries()].sort((a, b) => {
-        const aex = currentLayer === 'lyrical' ? (a[1].emb.lyric_coords?.[0] ?? a[1].emb.pos_x) : a[1].emb.pos_x;
-        const aez = currentLayer === 'lyrical' ? (a[1].emb.lyric_coords?.[1] ?? a[1].emb.pos_z) : a[1].emb.pos_z;
-        const bex = currentLayer === 'lyrical' ? (b[1].emb.lyric_coords?.[0] ?? b[1].emb.pos_x) : b[1].emb.pos_x;
-        const bez = currentLayer === 'lyrical' ? (b[1].emb.lyric_coords?.[1] ?? b[1].emb.pos_z) : b[1].emb.pos_z;
+        const aex = currentLayer === 'lyrical' ? (a[1].emb.lyric_coords?.[0] ?? a[1].emb.pos_x) : currentLayer === 'combined' ? (a[1].emb.combined_coords?.[0] ?? a[1].emb.pos_x) : a[1].emb.pos_x;
+        const aez = currentLayer === 'lyrical' ? (a[1].emb.lyric_coords?.[1] ?? a[1].emb.pos_z) : currentLayer === 'combined' ? (a[1].emb.combined_coords?.[1] ?? a[1].emb.pos_z) : a[1].emb.pos_z;
+        const bex = currentLayer === 'lyrical' ? (b[1].emb.lyric_coords?.[0] ?? b[1].emb.pos_x) : currentLayer === 'combined' ? (b[1].emb.combined_coords?.[0] ?? b[1].emb.pos_x) : b[1].emb.pos_x;
+        const bez = currentLayer === 'lyrical' ? (b[1].emb.lyric_coords?.[1] ?? b[1].emb.pos_z) : currentLayer === 'combined' ? (b[1].emb.combined_coords?.[1] ?? b[1].emb.pos_z) : b[1].emb.pos_z;
         const da = (aex-px)**2 + (aez-pz)**2;
         const db = (bex-px)**2 + (bez-pz)**2;
         return db - da;
@@ -476,8 +612,8 @@ async function prespawnAround(posX, posZ) {
   let count = 0;
   for (const emb of embeddings) {
     if (planes.has(emb.id)) continue;
-    const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : emb.pos_x;
-    const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : emb.pos_z;
+    const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : currentLayer === 'combined' ? (emb.combined_coords?.[0] ?? emb.pos_x) : emb.pos_x;
+    const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : currentLayer === 'combined' ? (emb.combined_coords?.[1] ?? emb.pos_z) : emb.pos_z;
     const dx = ex - posX, dz = ez - posZ;
     if (Math.sqrt(dx*dx + dz*dz) < SPAWN_R) {
       spawnEmbedding(emb);
@@ -584,7 +720,8 @@ function updateProximity() {
     if (dist < nearDist) { nearDist = dist; nearEmb = emb; }
   }
 
-  if (nearEmb && nearDist < 10 && nearEmb.id !== lastNearId) {
+  // Skip now-playing updates while warping — planes are mid-lerp and proximity is unreliable
+  if (!isWarping && nearEmb && nearDist < 10 && nearEmb.id !== lastNearId) {
     if (lastNearId) {
       reportListen(lastNearId);
       const prev = embeddings.find(e => e.id === lastNearId);
@@ -623,31 +760,77 @@ let sessionTrace = []; // [{pos_x, pos_z}] — displayed as a user trail path
 
 function makeGhostCanvas(centroid) {
   const c = document.createElement('canvas');
-  c.width = 320; c.height = 180;
+  c.width = 320; c.height = 240;
   const ctx = c.getContext('2d');
-  ctx.clearRect(0, 0, 320, 180);
+  ctx.clearRect(0, 0, 320, 240);
 
-  // Centroid coordinates
-  ctx.font = '10px monospace';
-  ctx.fillStyle = 'rgba(212,207,200,0.9)';
-  ctx.fillText(`[ ${centroid.pos_x.toFixed(1)}, ${centroid.pos_z.toFixed(1)} ] ${currentLayer}`, 6, 30);
+  const hi  = 'rgba(212,207,200,0.92)';
+  const mid = 'rgba(200,194,186,0.75)';
+  const lo  = 'rgba(176,169,159,0.55)';
 
-  // Separator line
-  ctx.strokeStyle = 'rgba(212,207,200,0.3)';
-  ctx.lineWidth = 0.5;
-  ctx.beginPath();
-  ctx.moveTo(6, 50); ctx.lineTo(250, 50);
-  ctx.stroke();
+  const rule = (y) => {
+    ctx.strokeStyle = 'rgba(212,207,200,0.2)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(6, y); ctx.lineTo(310, y); ctx.stroke();
+  };
 
-  // Year centroid
+  // Header — names the computation and embedding layer
+  ctx.font = '8px monospace';
+  ctx.fillStyle = lo;
+  ctx.fillText(`// [${centroid.pos_x.toFixed(2)}, ${centroid.pos_z.toFixed(2)}]  [${currentLayer}]`, 6, 14);
+  rule(22);
+
+  // Algorithm definition — i indexes each visited track;
+  // w_i is dwell time scaled by α-gated similarity scores
+  ctx.fillText('for i in visited_tracks:', 6, 36);
+  ctx.fillText('  w_i = dwell_i · Σ(α_k · sim_k(i))', 6, 50);
+  rule(58);
+
+  // Weighted-average formulas; results shown as continued equality on next line
   ctx.font = '9px monospace';
-  ctx.fillStyle = 'rgba(176,169,159,0.6)';
-  ctx.fillText(`μ_year: ${centroid.year.toFixed(1)}`, 6, 68);
+  const fLines = [
+    ['pos_x = Σ(x_i·w_i) / Σ(w_i)', centroid.pos_x.toFixed(2)],
+    ['pos_z = Σ(z_i·w_i) / Σ(w_i)', centroid.pos_z.toFixed(2)],
+    ['year  = Σ(yr_i·w_i) / Σ(w_i)', centroid.year.toFixed(1)],
+  ];
+  fLines.forEach(([formula, result], i) => {
+    const fy = 72 + i * 28;
+    ctx.fillStyle = mid;
+    ctx.fillText(formula, 6, fy);
+    ctx.fillStyle = hi;
+    ctx.fillText(`      = ${result}`, 6, fy + 13);
+  });
 
-  // Small dot
+  rule(148);
+
+  // α_k scale factors — one per similarity dimension, named after behavior
+  ctx.font = '8px monospace';
+  const wPairs = [
+    ['α_audio',   weights.audio_similarity   || 1],
+    ['α_lyric',   weights.lyrical_similarity || 1],
+    ['α_year',    weights.year_proximity     || 1],
+    ['α_dérive',  weights.nav_derive         || 1],
+    ['α_détourn', weights.nav_detourn        || 1],
+    ['α_frolic',  weights.nav_frolic         || 1],
+  ];
+  for (let i = 0; i < wPairs.length; i += 2) {
+    const y = 162 + (i / 2) * 15;
+    ctx.fillStyle = lo;
+    ctx.fillText(wPairs[i][0], 6, y);
+    ctx.fillStyle = mid;
+    ctx.fillText(wPairs[i][1].toFixed(2), 84, y);
+    if (wPairs[i + 1]) {
+      ctx.fillStyle = lo;
+      ctx.fillText(wPairs[i + 1][0], 160, y);
+      ctx.fillStyle = mid;
+      ctx.fillText(wPairs[i + 1][1].toFixed(2), 248, y);
+    }
+  }
+
+  // Anchor dot
   ctx.beginPath();
-  ctx.arc(10, 100, 2.5, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(212,207,200,0.85)';
+  ctx.arc(10, 232, 2.5, 0, Math.PI * 2);
+  ctx.fillStyle = hi;
   ctx.fill();
 
   return c;
@@ -688,7 +871,7 @@ function setNowPlaying(emb) {
   document.getElementById('np-title').textContent = emb.title || '—';
   const mins = emb.duration ? Math.floor(emb.duration/60) + ':' + String(Math.round(emb.duration%60)).padStart(2,'0') : '—';
   document.getElementById('np-meta').textContent =
-    `${emb.artist || '—'}  ·  ${emb.year || '—'}  ·  ${mins}`;
+    `${emb.artist || '—'}  ·  ${emb.year || '—'}`;
 }
 
 // ── Minimap ───────────────────────────────────────────────────
@@ -786,8 +969,33 @@ function drawMinimap() {
 const keys = {};
 let yaw = 0;
 
+// ── Help dialog ───────────────────────────────────────────────
+let _helpBuf = '';
+const _helpDialog = document.getElementById('help-dialog');
+document.getElementById('help-dialog-close').addEventListener('click', () => {
+  _helpDialog.classList.remove('visible');
+});
+
 document.addEventListener('keydown', e => {
   if (document.getElementById('spawn-screen').style.display !== 'none') return;
+
+  // Escape closes help dialog
+  if (e.key === 'Escape') {
+    _helpDialog.classList.remove('visible');
+    _helpBuf = '';
+    return;
+  }
+
+  // Buffer last 8 chars of printable keystrokes; toggle dialog on '--help'
+  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+    _helpBuf = (_helpBuf + e.key).slice(-8);
+    if (_helpBuf.endsWith('--help')) {
+      _helpDialog.classList.toggle('visible');
+      _helpBuf = '';
+      return;
+    }
+  }
+
   keys[e.code] = true;
   if (e.code==='Digit1') toggleDerive();
   if (e.code==='Digit2') triggerNav('detourn');
@@ -817,7 +1025,6 @@ function moveCamera(delta) {
   if (keys['KeyA']||keys['ArrowLeft'])  camera.position.addScaledVector(rt,  -sp);
   if (keys['KeyD']||keys['ArrowRight']) camera.position.addScaledVector(rt,   sp);
   camera.position.y = 0;
-  document.getElementById('coords').textContent = `x:${camera.position.x.toFixed(0)}  z:${camera.position.z.toFixed(0)}`;
 }
 
 // ── Stable camera facing anchor ───────────────────────────────
@@ -833,12 +1040,11 @@ function faceTarget(targetX, targetZ) {
 // Smoothly moves position only. Facing is applied as a clean snap at arrival via faceTarget
 
 // Returns [x, z] for an embedding in the current layer.
-// audio_coords and lyric_coords are always populated from the initial load.
-// year layer has no dedicated field — pos_x/pos_z is updated to year coords by the layer switch handler.
 function getLayerPos(emb) {
-  if (currentLayer === 'audio')   return [emb.audio_coords?.[0] ?? emb.pos_x, emb.audio_coords?.[1] ?? emb.pos_z];
-  if (currentLayer === 'lyrical') return [emb.lyric_coords?.[0] ?? emb.pos_x, emb.lyric_coords?.[1] ?? emb.pos_z];
-  return [emb.pos_x, emb.pos_z]; // year: pos_x/pos_z updated to year coords by layer switch
+  if (currentLayer === 'audio')    return [emb.audio_coords?.[0]    ?? emb.pos_x, emb.audio_coords?.[1]    ?? emb.pos_z];
+  if (currentLayer === 'lyrical')  return [emb.lyric_coords?.[0]    ?? emb.pos_x, emb.lyric_coords?.[1]    ?? emb.pos_z];
+  if (currentLayer === 'combined') return [emb.combined_coords?.[0] ?? emb.pos_x, emb.combined_coords?.[1] ?? emb.pos_z];
+  return [emb.pos_x, emb.pos_z];
 }
 
 function warpTo(destEmb) {
@@ -917,12 +1123,12 @@ function showNavStatus(mode) {
 // ── Navigation ────────────────────────────────────────────────
 // All nav requests include the active layer so the backend uses the matching embedding matrix
 // Computes centroid of k nearest track embeddings for intra-layer navigation
-function getCurrentCentroidIds(k = 12) {
+function getCurrentCentroidIds(k = LAYER_K[currentLayer]) {
   const px = camera.position.x, pz = camera.position.z;
   const sorted = [...planes.values()]
     .map(({ emb }) => {
-      const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : emb.pos_x;
-      const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : emb.pos_z;
+      const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : currentLayer === 'combined' ? (emb.combined_coords?.[0] ?? emb.pos_x) : emb.pos_x;
+      const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : currentLayer === 'combined' ? (emb.combined_coords?.[1] ?? emb.pos_z) : emb.pos_z;
       return { emb, dist: Math.sqrt((ex - px) ** 2 + (ez - pz) ** 2) };
     })
     .sort((a, b) => a.dist - b.dist)
@@ -953,6 +1159,16 @@ function triggerNav(mode) {
       // Always resolve world position layer aware, never from server-returned pos_x/pos_z which are always audio coords
       const fullEmb = embeddings.find(e=>e.id===dest.id) || dest;
       warpTo(fullEmb);
+    }
+    // Show precise UMAP projection of the mean embedding used for this nav action
+    if (data.centroid_umap) {
+      const { pos_x, pos_z } = data.centroid_umap;
+      document.getElementById('coords').textContent =
+        `(k=${LAYER_K[currentLayer]})  [${Math.round(pos_x)}, ${Math.round(pos_z)}]`;
+    }
+    if (data.similarity != null) {
+      document.getElementById('similarity').textContent =
+        `${data.similarity.toFixed(4)}`;
     }
     fetch('/api/listener/nav', { 
       method:'POST', 
@@ -1002,18 +1218,11 @@ function computeLayerPositions(layer) {
       const c = emb.lyric_coords;
       if (c) pos[emb.id] = { pos_x: c[0], pos_z: c[1] };
     }
-  } else if (layer === 'year') {
-    // Mirror of world_service._year_spiral_positions(): sort by year, place on a growing spiral.
-    const sorted = [...embeddings].sort((a, b) => a.year - b.year);
-    const n = sorted.length;
-    sorted.forEach((emb, i) => {
-      const angle  = i * 0.3;
-      const radius = 50 + (i / n) * 950;
-      pos[emb.id] = {
-        pos_x: Math.round(Math.cos(angle) * radius * 100) / 100,
-        pos_z: Math.round(Math.sin(angle) * radius * 100) / 100,
-      };
-    });
+  } else if (layer === 'combined') {
+    for (const emb of embeddings) {
+      const c = emb.combined_coords;
+      if (c) pos[emb.id] = { pos_x: c[0], pos_z: c[1] };
+    }
   }
   return pos;
 }
@@ -1023,7 +1232,7 @@ document.querySelectorAll('.layer-btn').forEach(btn => btn.addEventListener('cli
   btn.classList.add('active');
   const layer = btn.dataset.layer;
   currentLayer = layer;
-  document.getElementById('lyric-columns').style.opacity = layer === 'lyrical' ? '1' : '0';
+  document.getElementById('lyric-columns').style.opacity = (layer === 'lyrical' || layer === 'combined') ? '1' : '0';
 
   // Redraw vector text canvases to reflect new layer coordinates
   for (const [, entry] of planes) {
@@ -1031,6 +1240,9 @@ document.querySelectorAll('.layer-btn').forEach(btn => btn.addEventListener('cli
     entry.vecMesh.material.map.image = newCanvas;
     entry.vecMesh.material.map.needsUpdate = true;
   }
+
+  // Log layer switch state to verify the anchor track and now-playing are in sync
+  console.log(`[layer] switching to "${layer}" | lastNearId: ${lastNearId} | currentEmb: ${currentEmb?.id} | np-title: "${document.getElementById('np-title').textContent}"`);
 
   isWarping = true;
 
@@ -1056,14 +1268,27 @@ document.querySelectorAll('.layer-btn').forEach(btn => btn.addEventListener('cli
   if (lastNearId && pos[lastNearId]) {
     const p = pos[lastNearId];
     camera.position.x = p.pos_x;
-    camera.position.z = p.pos_z + 22;
+    camera.position.z = p.pos_z;
     faceTarget(p.pos_x, p.pos_z);
     prespawnAround(p.pos_x, p.pos_z);
+    // Re-assert now-playing so it stays on the anchor track through the lerp transition
+    const anchorEmb = embeddings.find(e => e.id === lastNearId);
+    if (anchorEmb) { currentEmb = anchorEmb; setNowPlaying(anchorEmb); }
+    // Log where the camera landed — should match lastNearId's new layer coords
+    console.log(`[layer] camera anchored to ${lastNearId} at (${p.pos_x.toFixed(1)}, ${p.pos_z.toFixed(1)})`);
+  } else {
+    // Warns if lastNearId is null or missing from the new layer's position map
+    console.warn(`[layer] no anchor — lastNearId: ${lastNearId}, in pos: ${lastNearId ? !!pos[lastNearId] : 'n/a'}`);
   }
 
   // Defer minimap rebuild to a future task so it doesn't block the render loop
   setTimeout(buildMinimapOffscreen, 0);
-  setTimeout(() => { isWarping = false; }, 1500);
+  setTimeout(() => {
+    isWarping = false;
+    // Re-assert anchor track once lerp settles — guards against dense-space proximity collisions
+    const anchor = embeddings.find(e => e.id === lastNearId);
+    if (anchor) { currentEmb = anchor; setNowPlaying(anchor); }
+  }, 1500);
 
   fetch('/api/listener/layer', {
     method:'POST',
@@ -1212,7 +1437,7 @@ function initLyricColumns() {
 }
 
 function updateLyricColumns() {
-  if (currentLayer !== 'lyrical') return;
+  if (currentLayer !== 'lyrical' && currentLayer !== 'combined') return;
 
   // Get currently playing track IDs
   const playing = [...audioEls.keys()];
@@ -1232,7 +1457,10 @@ function updateLyricColumns() {
     const freeCol = [...Array(NUM_COLS).keys()].find(c => !usedCols.has(c));
     if (freeCol === undefined) continue;
     const emb = embeddings.find(e => e.id === id);
-    if (!emb || !emb.lyrics) continue;
+    if (!emb || !emb.lyrics) {
+      console.log(`[lyrics] ${id} — skipped (${!emb ? 'not in embeddings' : 'no lyrics field'})`);
+      continue;
+    }
     // Duplicate lyrics so scroll loops seamlessly
     const text = emb.lyrics + '\n\n' + emb.lyrics;
     _lyricColEls[freeCol].textContent = text;
@@ -1241,7 +1469,12 @@ function updateLyricColumns() {
     _lyricColEls[freeCol].style.animationDuration = `${duration}s`;
     _lyricAssigned[id] = freeCol;
     usedCols.add(freeCol);
+    // Log each successful column assignment with lyrics length for sanity-checking content
+    console.log(`[lyrics] ${id} → col ${freeCol} (${emb.lyrics.length} chars)`);
   }
+
+  // Summary log each cycle: all playing IDs vs. which ones got columns assigned
+  console.log(`[lyrics] playing: [${playing.join(', ')}] | assigned: {${Object.entries(_lyricAssigned).map(([id,c])=>`${id}→${c}`).join(', ')}}`);
 }
 
 // ── Render loop ───────────────────────────────────────────────
@@ -1249,8 +1482,11 @@ let last = 0;
 let _minimapFrame  = 0;
 let _positionFrame = 0;
 let _budgetFrame   = 0;
+const FRAME_MIN_MS = 1000 / (DEV_MODE ? 20 : 60); // dev mode: 20fps to minimise GPU pressure
+
 function animate(now) {
   requestAnimationFrame(animate);
+  if (now - last < FRAME_MIN_MS) return;
   const delta = Math.min((now - last) / 1000, 0.05);
   last = now;
 

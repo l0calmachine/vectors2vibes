@@ -1,17 +1,20 @@
 """
 audio.py — audio serving endpoint.
 
-Serves from local disk when LOCAL_AUDIO_DIR is set (recommended).
-Falls back to proxying from HuggingFace when it isn't.
+Priority order (first matching env var wins):
 
-Local mode (set LOCAL_AUDIO_DIR env var after running scripts/download_assets.py):
-  - FileResponse handles HTTP Range requests natively, so the browser starts
-    playing on the first chunk rather than waiting for a full download.
-  - No in-memory buffering; reads directly from disk.
+  1. LOCAL_AUDIO_DIR — serve from local disk via FileResponse.
+     Range requests handled natively; instant playback start.
+     Set after running scripts/download_assets.py.
 
-HuggingFace proxy mode (default, no setup required):
-  - Downloads the full file from HF before responding — adds latency on first play.
-  - LRU cache avoids re-downloading tracks that have been played before.
+  2. PI_BASE_URL — redirect to Raspberry Pi static file server (302).
+     Browser streams directly from the Pi; range requests handled by Caddy.
+     No credentials exposed. Set PI_BASE_URL=http://<pi-ip>:8080 in .env.
+
+  3. HuggingFace proxy (default) — downloads full file before responding.
+     Adds latency on first play; LRU cache helps on repeat plays.
+     Requires HF_TOKEN in .env. Note: proxying keeps the token server-side.
+     Do NOT use a redirect to HF — that would expose HF_TOKEN in the browser.
 
 Used with: GET /api/audio/stream/{track_id}
 """
@@ -23,7 +26,7 @@ from pathlib import Path
 
 import httpx
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import Response, FileResponse
+from fastapi.responses import Response, FileResponse, RedirectResponse
 from backend.services.embedding_service import get_embedding_service
 
 router = APIRouter()
@@ -32,6 +35,7 @@ HF_TOKEN      = os.environ.get("HF_TOKEN", "")
 HF_AUDIO_BASE = "https://huggingface.co/datasets/vectors2vibes/vectors2vibes-discogs-audio/resolve/main/{file_path}"
 
 LOCAL_AUDIO_DIR = os.environ.get("LOCAL_AUDIO_DIR", "")
+PI_BASE_URL     = os.environ.get("PI_BASE_URL", "").rstrip("/")
 
 # ── LRU audio cache (HF proxy mode only) ─────────────────────────────────────
 MAX_CACHED_TRACKS = 100
@@ -84,6 +88,13 @@ async def stream_audio(track_id: str):
             path=str(local_path),
             media_type="audio/ogg",
             headers={"Cache-Control": "public, max-age=86400"},
+        )
+
+    # ── Pi redirect mode: browser streams directly, range requests handled by Caddy
+    if PI_BASE_URL:
+        return RedirectResponse(
+            url=f"{PI_BASE_URL}/audio/{file_path}",
+            status_code=302,
         )
 
     # ── HuggingFace proxy mode ────────────────────────────────────────────────
@@ -149,8 +160,9 @@ def cache_status():
     """Dev utility — shows how many tracks are cached (HF proxy mode only)."""
     total_bytes = sum(len(v) for v in _cache.values())
     return {
-        "mode":          "local" if LOCAL_AUDIO_DIR else "hf-proxy",
+        "mode":          "local" if LOCAL_AUDIO_DIR else "pi-redirect" if PI_BASE_URL else "hf-proxy",
         "local_dir":     LOCAL_AUDIO_DIR or None,
+        "pi_base_url":   PI_BASE_URL or None,
         "cached_tracks": len(_cache),
         "max_tracks":    MAX_CACHED_TRACKS,
         "total_mb":      round(total_bytes / 1_048_576, 2),

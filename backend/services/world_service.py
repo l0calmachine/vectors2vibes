@@ -6,7 +6,7 @@ Coordinates (x,z) are UMAP-derived by EmbeddingService from audio/lyrical embedd
 
 Visual layers:
   'audio'   → UMAP on audio_embedding  (1024-dim)
-  'lyrical' → UMAP on lyric_embedding  (384-dim)
+  'lyrical' → UMAP on lyric_embeddings  (384-dim)
   'year'    → chronological spiral (metadata-based, no embedding)
 
 """
@@ -88,14 +88,15 @@ class WorldService:
                 'title':         str(row.get('track_title', f'Track {i}')),
                 'artist':        artist,
                 'year':          year,
-                'lyrics':        str(row.get('lyrics', '')),
+                'lyrics':        str(row.get('transcribed_lyrics', '')),
                 'duration':      duration,
                 'youtube_url':   str(row.get('webpage_url', f'https://www.youtube.com/watch?v={track_id}')),
                 'thumbnail_url': f'/api/thumb/{track_id}',
                 'file_path':     str(row.get('file_path', '')),
                 'genre':         genre,
-                'audio_coords':  [round(float(pos_x), 1), round(float(pos_z), 1)],
-                'lyric_coords':  [round(float(emb_svc.lyric_coords[idx, 0]), 1), round(float(emb_svc.lyric_coords[idx, 1]), 1)],
+                'audio_coords':    [round(float(pos_x), 1), round(float(pos_z), 1)],
+                'lyric_coords':    [round(float(emb_svc.lyric_coords[idx, 0]), 1), round(float(emb_svc.lyric_coords[idx, 1]), 1)],
+                'combined_coords': [round(float(emb_svc.combined_coords[idx, 0]), 1), round(float(emb_svc.combined_coords[idx, 1]), 1)],
                 'pos_x':         pos_x,
                 'pos_z':         pos_z,
             }
@@ -174,8 +175,9 @@ class WorldService:
                     'audio_url':      self._resolve_audio(t),
                     'pos_x':          t['pos_x'],
                     'pos_z':          t['pos_z'],
-                    'audio_coords':   t['audio_coords'],
-                    'lyric_coords':   t['lyric_coords'],
+                    'audio_coords':    t['audio_coords'],
+                    'lyric_coords':    t['lyric_coords'],
+                    'combined_coords': t['combined_coords'],
                     'lyrics':         t.get('lyrics'),
                 }
                 for t in slice_

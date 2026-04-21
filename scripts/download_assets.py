@@ -52,9 +52,17 @@ def download(repo_id, local_dir, description):
 
 
 if __name__ == "__main__":
-    download(AUDIO_REPO, AUDIO_DIR, "audio files (~81.3GB, takes a while)")
-    download(THUMB_REPO,  THUMB_DIR,  "thumbnail images (~613MB)")
-    print("\nAll assets downloaded.")
+    import argparse
+    parser = argparse.ArgumentParser(description="Download vectors2vibes assets from HuggingFace.")
+    parser.add_argument("--only", choices=["audio", "thumbnails"], help="Download only one asset type (default: both)")
+    args = parser.parse_args()
+
+    if args.only != "thumbnails":
+        download(AUDIO_REPO, AUDIO_DIR, "audio files (~81.3GB, takes a while)")
+    if args.only != "audio":
+        download(THUMB_REPO, THUMB_DIR, "thumbnail images (~613MB)")
+
+    print("\nDone.")
     print("Set these env vars before starting the server:")
     print(f"  LOCAL_AUDIO_DIR={AUDIO_DIR}")
     print(f"  LOCAL_THUMB_DIR={THUMB_DIR}")
