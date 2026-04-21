@@ -118,10 +118,11 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 #minimap canvas { display: block; }
 
 #derive-panel, #detourn-panel {
-  position: absolute; bottom: 18px; left: 18px;
+  position: fixed; right: 18px; bottom: 270px;
   display: none; flex-direction: column; gap: 6px;
   pointer-events: all; border: 1px solid var(--dim);
-  padding: 10px; width: 200px; background: rgba(10,9,8,0.88);
+  padding: 10px; width: 200px; background: rgba(10,9,8,0.87);
+  z-index: 15;
 }
 #derive-panel.visible { display: flex; }
 #detourn-panel.visible { display: flex; }
@@ -159,7 +160,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   padding: 40px;
 }
 #spawn-title { font-size: 18px; color: var(--faint); letter-spacing: 6px; }
-#spawn-subtitle { font-size: 12px; color: var(--dim); letter-spacing: 2px; margin-top: -18px; }
+#spawn-subtitle, #spawn-subtitle i { font-family: 'Courier New', Courier, monospace; font-size: 13px; color: var(--dim); -webkit-text-stroke: 0px; text-align: justify; margin-bottom: 10px; max-width: 28vw;}
 
 #spawn-options { display: flex; flex-direction: column; gap: 10px; width: 320px; }
 
@@ -168,7 +169,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   cursor: pointer; transition: none;
 }
 .spawn-option:hover { border-color: var(--paper); }
-.spawn-option-title { font-size: 14px; color: var(--paper); letter-spacing: 1px; margin-bottom: 4px; }
+.spawn-option-title { font-size: 12px; color: var(--paper); letter-spacing: 1px; margin-bottom: 4px; }
 .spawn-option-desc  { font-size: 12px; color: var(--dim); letter-spacing: 1px; line-height: 1.5; }
 
 #spawn-params { width: 320px; display: flex; flex-direction: column; gap: 8px; }
@@ -180,7 +181,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 
 #spawn-go {
   width: 320px; background: transparent; border: 1px solid var(--faint);
-  color: var(--paper); font-size: 14px; letter-spacing: 2px;
+  color: var(--paper); font-size: 13px; letter-spacing: 2px;
   padding: 10px; cursor: pointer;
 }
 #spawn-go:hover { background: rgba(212,207,200,0.06); }
@@ -197,7 +198,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   position: absolute;
   bottom: 52px;
   left: 55%;
-  font-size: 12px; color: var(--faint);
+  font-size: 13px; color: var(--faint);
   letter-spacing: 1px; pointer-events: none;
   opacity: 0; transition: opacity 0.3s;
   white-space: nowrap;
@@ -253,7 +254,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 <div id="spawn-screen">
   <div id="spawn-title">vectors2vibes</div>
   <div id="spawn-subtitle">
-    Against recommendation, this interface invites you to disorient, reassociate, and vibe machinically. You are invited to move beyond 'slavish reference to citations' and enter a sonic EMBEDDING SPACE — a fuzzy relational field of ambiance.
+    Against recommendation, this interface invites you to disorient, reassociate, and vibe machinically. You are invited to move beyond <i>"slavish reference to citations"</i> and enter a sonic EMBEDDING SPACE — a fuzzy relational field of ambiance.
   </div>
 
   <div id="spawn-options">
@@ -312,22 +313,22 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
     </div>
   </div>
 
-  <div id="derive-panel">
-    <label>cosine similarity</label>
-    <input id="derive-val" type="number" value="0.7" min="0" max="1" step="0.05">
-    <div id="derive-range" style="font-size:9px; color:var(--dim); letter-spacing:1px; margin-top:2px;"></div>
-    <button id="derive-go">derive →</button>
-  </div>
-
-  <div id="detourn-panel">
-    <label>target year</label>
-    <input id="detourn-val" type="number" value="1980" min="1900" max="2030">
-    <button id="detourn-go">détourn →</button>
-  </div>
-
   <div id="hint">click to look around</div>
   <div id="nav-status"></div>
   <div id="help-trigger">--help</div>
+</div>
+
+<div id="derive-panel">
+  <label>cosine similarity</label>
+  <input id="derive-val" type="number" value="0.7" min="0" max="1" step="0.05">
+  <div id="derive-range" style="font-size:9px; color:var(--dim); letter-spacing:1px; margin-top:2px;"></div>
+  <button id="derive-go">derive →</button>
+</div>
+
+<div id="detourn-panel">
+  <label>target year</label>
+  <input id="detourn-val" type="number" value="1980" min="1900" max="2030">
+  <button id="detourn-go">détourn →</button>
 </div>
 
 <div id="help-dialog">
