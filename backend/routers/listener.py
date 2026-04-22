@@ -3,6 +3,8 @@ listener.py — endpoints for user behavior tracking and weight adjustment (sess
               drives user centroid "ghost".
 """
 
+from typing import Optional
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 from backend.services.listener_service import ListenerService
@@ -27,8 +29,9 @@ class LayerEvent(BaseModel):
 
 
 class NavEvent(BaseModel):
-    session_id: str
-    nav_style: str # derive/detourn/frolic
+    session_id:       str
+    nav_style:        str            # derive/detourn/stroll
+    similarity_input: Optional[float] = None  # derive only
 
 
 @router.post("/listen")
@@ -58,4 +61,4 @@ def record_nav(event: NavEvent):
     Records which navigational style the user prefers.
     Adjusts nav weights in centroid calculation.
     """
-    return listener_service.record_nav(event.session_id, event.nav_style)
+    return listener_service.record_nav(event.session_id, event.nav_style, event.similarity_input)

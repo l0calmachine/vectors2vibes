@@ -25,8 +25,6 @@ service layer uses to populate metadata and coordinates to the frontend.
 
 """
 
-import random
-
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -55,6 +53,18 @@ class NavigationService:
         return np.mean(matrix[indices], axis=0)
 
 
+    def _centroid_meta(self, position, similarity, layer):
+        """Return centroid_umap and similarity for a nav response."""
+        try:
+            cx, cz = self.emb_svc.project_to_world(position, layer)
+            centroid_umap = {'pos_x': round(cx, 1), 'pos_z': round(cz, 1)}
+        except Exception:
+            centroid_umap = None
+        return {
+            'centroid_umap': centroid_umap,
+            'similarity':    round(float(similarity), 4),
+        }
+
     def _format_result(self, t):
         """
         Returns the track fields needed for the frontend.
@@ -75,9 +85,7 @@ class NavigationService:
 
 
     # ── Navigation functions ─────────────────────────────────────────────────
-    # Updated Derive as based on input cosine similarity, not year.
-    #NB: prompting for similarity_input requires support.
-    def derive(self, current_ids, similarity_input, weights=None, layer='audio', tolerance=0.05):
+    def derive(self, current_ids, similarity_input, layer='audio', tolerance=0.05):
         """
         Drift away from the current position based on a target cosine similarity.
         similarity_input: float between -1 and 1
@@ -120,10 +128,10 @@ class NavigationService:
             'sim_min':          round(float(sims.min()), 4),
             'sim_max':          round(float(sims.max()), 4),
             'destination':      self._format_result(dest),
+            **self._centroid_meta(position, sims[chosen_idx], layer),
         }
 
-    # Updated Detourn functionality to jump to the centroid of a target year's songs.
-    def detourn(self, current_ids, target_year, weights=None, layer='audio'):
+    def detourn(self, current_ids, target_year, layer='audio'):
         """
         Transport the user to the centroid of a target year's songs.
         """
@@ -141,17 +149,18 @@ class NavigationService:
 
         # Resolve centroid to nearest track
         sims = cosine_similarity([new_position], matrix)[0]
-        dest_id = emb_svc.get_id_at(int(np.argmax(sims)))
+        dest_idx = int(np.argmax(sims))
+        dest_id = emb_svc.get_id_at(dest_idx)
         dest = self.world.get_by_id(dest_id)
 
         return {
             'mode':        'detourn',
             'target_year': target_year,
             'destination': self._format_result(dest),
+            **self._centroid_meta(new_position, sims[dest_idx], layer),
         }
 
-    # Changed Frolic to Stroll.
-    def stroll(self, current_ids, weights=None, layer='audio'):
+    def stroll(self, current_ids, layer='audio'):
         """
         Stroll to a random song that is not too similar to the current position.
         """
@@ -176,4 +185,8 @@ class NavigationService:
         dest_id = emb_svc.get_id_at(int(random_idx))
         dest = self.world.get_by_id(dest_id)
 
-        return {'mode': 'stroll', 'destination': self._format_result(dest)}
+        return {
+            'mode': 'stroll',
+            'destination': self._format_result(dest),
+            **self._centroid_meta(position, sim, layer),
+        }

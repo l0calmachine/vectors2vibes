@@ -27,20 +27,24 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 #canvas-container { position: fixed; inset: 0; pointer-events: none; }
 
 /* HUD */
-#hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; mix-blend-mode: difference;}
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
 
-#topleft { position: absolute; top: 16px; left: 18px; line-height: 1.4; }
-#title   { font-size: 14px; letter-spacing: 3px; color: var(--faint); text-transform: lowercase; }
-#coords-title      { font-family: 'CirrusCumulus', monospace; font-size: 13px; color: var(--dim); margin-top: 2px; }
-#coords      { font-family: 'Courier New', monospace; font-size: 12px; color: var(--dim); margin-top: 2px; -webkit-text-stroke: 0px;}
-#similarity-title      { font-family: 'CirrusCumulus', monospace;font-size: 13px; color: var(--dim); margin-top: 2px; }
-#similarity  { font-family: 'Courier New', monospace; font-size: 12px; color: var(--dim); margin-top: 1px; -webkit-text-stroke: 0px;}
+#topleft { position: fixed; top: 16px; left: 18px; line-height: 1.4; mix-blend-mode: difference; pointer-events: none; z-index: 10; max-width: 200px; }
+#title   { font-size: 16px; letter-spacing: 3px; color: var(--faint); text-transform: lowercase; }
+#coords-title      { font-family: 'CirrusCumulus', monospace; font-size: 15px; color: var(--dim); margin-top: 2px; }
+#coords      { font-family: 'Courier New', monospace; font-size: 14px; color: var(--dim); margin-top: 2px; -webkit-text-stroke: 0px; word-break: break-all; }
+#similarity-title      { font-family: 'CirrusCumulus', monospace; font-size: 15px; color: var(--dim); margin-top: 2px; }
+#similarity  { font-family: 'Courier New', monospace; font-size: 14px; color: var(--dim); margin-top: 1px; -webkit-text-stroke: 0px; word-break: break-all; }
+.eq-input  { font-family: 'Courier New', monospace; -webkit-text-stroke: 0px; font-size: 10px; letter-spacing: 0px; color: var(--dim); opacity: 0.7; }
+.eq-result { font-family: 'Courier New', monospace; -webkit-text-stroke: 0px; font-size: 14px; letter-spacing: 1px; color: var(--faint); display: block; }
 
-/* Help trigger (top-right, inside #hud) */
+/* Help trigger (top-right) */
 #help-trigger {
-  position: absolute; top: 16px; right: 18px;
-  font-size: 13px; color: var(--dim); letter-spacing: 2px;
+  position: fixed; top: 16px; right: 18px;
+  font-size: 15px; color: var(--dim); letter-spacing: 2px;
   pointer-events: none;
+  mix-blend-mode: difference;
+  z-index: 10;
 }
 
 /* Help dialog — outside #hud so blend mode doesn't invert it */
@@ -56,84 +60,86 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   transition: transform 0.18s ease, opacity 0.18s ease;
   pointer-events: none;
 }
-#help-dialog p { padding-bottom: 10px; }
-#help-dialog a { color: var(--dim); }
-#help-dialog a:hover { color: var(--faint); }
+#help-dialog p, #spawn-loading-content p { padding-bottom: 14px; }
+#help-dialog a, #spawn-loading-content a { color: var(--dim); }
+#help-dialog a:hover, #spawn-loading-content a:hover { color: var(--faint); }
 
 #help-dialog.visible { transform: scale(1); opacity: 1; pointer-events: all; }
 #help-dialog-header {
   display: flex; justify-content: space-between; align-items: baseline;
   margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(176,169,159,0.2);
 }
-#help-dialog-title { font-family: 'CirrusCumulus', monospace; font-size: 13px; color: var(--dim); letter-spacing: 3px; }
+#help-dialog-title { font-family: 'CirrusCumulus', monospace; font-size: 15px; color: var(--dim); letter-spacing: 3px; }
 #help-dialog-close {
   background: none; border: none; color: var(--dim);
-  font-size: 10px; letter-spacing: 2px; cursor: pointer; padding: 0;
+  font-size: 12px; letter-spacing: 2px; cursor: pointer; padding: 0;
   -webkit-text-stroke: 0px;
 }
 #help-dialog-close:hover { color: var(--paper); }
 
-#help-dialog-body { font-size: 13px; color: var(--dim); line-height: 1.8; letter-spacing: 1px; overflow-y: auto; flex: 1; scroll-behavior: smooth; }
-#help-dialog-body * { font-family: 'Courier New', monospace; -webkit-text-stroke: 0px; }
+#help-dialog-body, #spawn-loading-content { font-size: 15px; color: var(--dim); line-height: 1.8; letter-spacing: 1px; overflow-y: auto; flex: 1; scroll-behavior: smooth; }
+#help-dialog-body *, #spawn-loading-content * { font-family: 'Courier New', monospace; -webkit-text-stroke: 0px; }
 #help-dialog-intro p, #help-dialog-intro i { line-height: 1.5; }
-#help-dialog-subheader { font-family: 'CirrusCumulus', monospace; font-size: 14px; color: var(--dim); line-height: 1.8; letter-spacing: 1px; -webkit-text-stroke: 0.6px; margin-top: 14px; padding-top: 10px; padding-bottom: 10px; border-top: 1px solid rgba(176,169,159,0.2); }
-#help-dialog-body a[href^="#["] { font-family: 'CirrusCumulus', monospace; }
+#help-dialog-subheader { font-family: 'CirrusCumulus', monospace; font-size: 16px; color: var(--dim); line-height: 1.8; letter-spacing: 1px; -webkit-text-stroke: 0.6px; margin-top: 14px; padding-top: 10px; padding-bottom: 10px; border-top: 1px solid rgba(176,169,159,0.2); }
+#help-dialog-body a[href^="#["], #spawn-loading-content a[href^="#["] { font-family: 'CirrusCumulus', monospace; }
 
-#help-dialog-body::-webkit-scrollbar { width: 2px; padding-left: 4px; }
-#help-dialog-body::-webkit-scrollbar-track { background: transparent; }
-#help-dialog-body::-webkit-scrollbar-thumb { background: rgba(176,169,159,0.2); }
+#help-dialog-body::-webkit-scrollbar, #spawn-loading-content::-webkit-scrollbar { width: 2px; padding-left: 4px; }
+#help-dialog-body::-webkit-scrollbar-track, #spawn-loading-content::-webkit-scrollbar-track { background: transparent; }
+#help-dialog-body::-webkit-scrollbar-thumb, #spawn-loading-content::-webkit-scrollbar-thumb { background: rgba(176,169,159,0.2); }
 
 #help-dialog-references { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(176,169,159,0.2) }
-#help-dialog-references p, #help-dialog-references a { font-size: 9px; line-height: 1.1; }
-#help-dialog-formula { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--dim); margin-top: 1px; }
+#help-dialog-references p, #help-dialog-references a { font-size: 10px; line-height: 1.1; }
+#help-dialog-formula { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--dim); margin-top: 1px; background-color: var(--ink); padding: .5px; }
 
 #layers {
   position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 2px; pointer-events: all;
+  display: flex; gap: 2px; pointer-events: all; z-index: 11;
 }
 .layer-btn {
-  background: transparent; border: 1px solid var(--dim);
-  color: var(--dim); font-size: 13px; letter-spacing: 2px;
-  padding: 4px 10px; cursor: pointer;
+  background: rgba(10,9,8,0.77); border: 1px solid var(--dim);
+  color: var(--dim); font-size: 16px; letter-spacing: 1px;
+  padding: 4px 12px; cursor: pointer; text-align: left; white-space: nowrap;
 }
 .layer-btn:hover, .layer-btn.active { border-color: var(--paper); color: var(--paper); }
+.layer-btn .key { font-size: 10px; color: var(--dim); margin-left: 8px; }
 
 /* Nav + minimap location in bottom-right */
 #bottomright {
-  position: absolute; bottom: 18px; right: 18px;
+  position: absolute; bottom: 248px; right: 18px;
   display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
-  pointer-events: all;
+  pointer-events: all; z-index: 11;
 }
 #nav-controls { display: flex; flex-direction: column; gap: 3px; }
 .nav-btn {
-  background: transparent; border: 1px solid var(--dim);
-  color: var(--dim); font-size: 14px; letter-spacing: 1px;
+  background: rgba(10,9,8,0.77); border: 1px solid var(--dim);
+  color: var(--dim); font-size: 16px; letter-spacing: 1px;
   padding: 4px 12px; cursor: pointer; text-align: left; white-space: nowrap;
 }
 .nav-btn:hover { color: var(--paper); border-color: var(--paper); }
-.nav-btn .key { font-size: 9px; color: var(--dim); margin-left: 8px; }
+.nav-btn .key { font-size: 10px; color: var(--dim); margin-left: 8px; }
 
 /* Minimap */
-#minimap { pointer-events: none; }
+#minimap { position: fixed; bottom: 18px; right: 18px; pointer-events: none; mix-blend-mode: difference; z-index: 10; }
 #minimap canvas { display: block; }
 
 #derive-panel, #detourn-panel {
-  position: fixed; right: 18px; bottom: 270px;
+  position: absolute; right: 18px; bottom: 360px;
   display: none; flex-direction: column; gap: 6px;
   pointer-events: all; border: 1px solid var(--dim);
-  padding: 10px; width: 200px; background: rgba(10,9,8,0.87);
+  padding: 10px; width: 200px; background: rgba(10,9,8,0.77);
   z-index: 15;
 }
 #derive-panel.visible { display: flex; }
 #detourn-panel.visible { display: flex; }
-#derive-panel label, #detourn-panel label { font-size: 10px; color: var(--dim); letter-spacing: 1px; }
+#derive-panel label, #detourn-panel label { font-size: 12px; color: var(--dim); letter-spacing: 1px; }
 #derive-panel input, #detourn-panel input {
   background: transparent; border: 1px solid var(--dim);
-  color: var(--paper); font-size: 10px; padding: 3px 5px; width: 100%;
+  color: var(--paper); font-size: 14px; padding: 3px 5px; width: 100%;
+  font-family: 'JetBrains Mono', monospace; -webkit-text-stroke: 0px;
 }
 #derive-go, #detourn-go {
   background: transparent; border: 1px solid var(--faint);
-  color: var(--paper); font-size: 13px; padding: 4px;
+  color: var(--paper); font-size: 15px; padding: 4px;
   cursor: pointer; margin-top: 2px;
 }
 #derive-go:hover, #detourn-go:hover { background: rgba(212,207,200,0.08); }
@@ -143,14 +149,15 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   position: absolute; bottom: 18px; left: 18px;
   display: flex; align-items: flex-start; gap: 10px;
   max-width: 340px;
+  background: rgba(10,9,8,0.75); border: 1px solid var(--dim); padding: 8px 10px;
 }
 #np-thumb {
   width: 32px; height: 32px; object-fit: fill;
   image-rendering: pixelated; flex-shrink: 0; opacity: 0.7;
 }
 #np-info  { flex: 1; overflow: hidden; }
-#np-title { font-size: 16px; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 1px; }
-#np-meta  { font-size: 13px; color: var(--dim); margin-top: 3px; }
+#np-title { font-size: 18px; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 1px; }
+#np-meta  { font-size: 15px; color: var(--dim); margin-top: 3px; }
 
 /* ── Spawn landing page ─────────────────────────────────── */
 #spawn-screen {
@@ -159,8 +166,8 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   align-items: center; justify-content: center; gap: 28px;
   padding: 40px;
 }
-#spawn-title { font-size: 18px; color: var(--faint); letter-spacing: 6px; }
-#spawn-subtitle, #spawn-subtitle i { font-family: 'Courier New', Courier, monospace; font-size: 13px; color: var(--dim); -webkit-text-stroke: 0px; text-align: justify; margin-bottom: 10px; max-width: 28vw;}
+#spawn-title { font-size: 21px; color: var(--faint); letter-spacing: 6px; }
+#spawn-subtitle, #spawn-subtitle i { font-family: 'Courier New', Courier, monospace; font-size: 15px; color: var(--dim); -webkit-text-stroke: 0px; text-align: justify; margin-bottom: 10px; max-width: 28vw;}
 
 #spawn-options { display: flex; flex-direction: column; gap: 10px; width: 320px; }
 
@@ -169,36 +176,44 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   cursor: pointer; transition: none;
 }
 .spawn-option:hover { border-color: var(--paper); }
-.spawn-option-title { font-size: 12px; color: var(--paper); letter-spacing: 1px; margin-bottom: 4px; }
-.spawn-option-desc  { font-size: 12px; color: var(--dim); letter-spacing: 1px; line-height: 1.5; }
+.spawn-option-title { font-size: 14px; color: var(--paper); letter-spacing: 1px; margin-bottom: 4px; }
+.spawn-option-desc  { font-size: 14px; color: var(--dim); letter-spacing: 1px; line-height: 1.5; }
 
 #spawn-params { width: 320px; display: flex; flex-direction: column; gap: 8px; }
-#spawn-params label { font-size: 12px; color: var(--dim); letter-spacing: 1px; }
+#spawn-params label { font-size: 14px; color: var(--dim); letter-spacing: 1px; }
 #spawn-params input, #spawn-params input[type=number] {
   background: transparent; border: 1px solid var(--dim);
-  color: var(--paper); font-size: 12px; padding: 5px 8px; width: 100%;
+  color: var(--paper); font-size: 15px; padding: 5px 8px; width: 100%;
+  font-family: 'JetBrains Mono', monospace; -webkit-text-stroke: 0px;
 }
 
 #spawn-go {
   width: 320px; background: transparent; border: 1px solid var(--faint);
-  color: var(--paper); font-size: 13px; letter-spacing: 2px;
+  color: var(--paper); font-size: 15px; letter-spacing: 2px;
   padding: 10px; cursor: pointer;
 }
 #spawn-go:hover { background: rgba(212,207,200,0.06); }
 
-/* Loading bar shown after birth year chosen */
-#spawn-loading { display: none; flex-direction: column; align-items: center; gap: 12px; }
-#spawn-loading-msg { font-size: 11px; color: var(--dim); letter-spacing: 2px; }
-#spawn-bar-wrap { width: 220px; height: 1px; background: var(--dim); }
+/* Loading screen */
+#spawn-loading { display: none; flex-direction: column; align-items: center; gap: 14px; width: 500px; }
+#spawn-loading-header { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+#spawn-loading-msg { font-size: 13px; color: var(--dim); letter-spacing: 2px; }
+#spawn-bar-wrap { width: 100%; height: 1px; background: var(--dim); }
 #spawn-bar { height: 100%; background: var(--faint); width: 0%; transition: width 0.3s; }
+#spawn-loading-content { width: 100%; max-height: 52vh; border: 1px solid rgba(176,169,159,0.25); padding: 0 20px; }
+#spawn-enter {
+  display: none; width: 100%; background: transparent; border: 1px solid var(--faint);
+  color: var(--paper); font-size: 15px; letter-spacing: 2px; padding: 10px; cursor: pointer;
+}
+#spawn-enter:hover { background: rgba(212,207,200,0.06); }
 
-#hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 10px; color: var(--dim); letter-spacing: 2px; pointer-events: none; opacity: 0.6; }
+#hint { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 12px; color: var(--dim); letter-spacing: 2px; pointer-events: none; opacity: 0.6; mix-blend-mode: difference; z-index: 10; }
 /* Nav action typewriter text */
 #nav-status {
   position: absolute;
   bottom: 52px;
   left: 55%;
-  font-size: 13px; color: var(--faint);
+  font-size: 15px; color: var(--faint);
   letter-spacing: 1px; pointer-events: none;
   opacity: 0; transition: opacity 0.3s;
   white-space: nowrap;
@@ -233,7 +248,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   position: absolute;
   top: 0;
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--dim);
   opacity: 0.35;
@@ -264,16 +279,86 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   </div>
 
   <div id="spawn-params">
-    <div id="param-birth-year" style="display:none;">
-      <input type="number" id="input-birth-year" value="1990" min="1920" max="2010">
+    <div id="param-vibe-year" style="display:none;">
+      <input type="number" id="input-vibe-year" value="1990" min="1920" max="2010">
     </div>
   </div>
 
   <button id="spawn-go" style="display:none;">spawn →</button>
 
   <div id="spawn-loading">
-    <div id="spawn-loading-msg">loading world...</div>
-    <div id="spawn-bar-wrap"><div id="spawn-bar"></div></div>
+    <div id="spawn-loading-header">
+      <div id="spawn-loading-msg">loading world...</div>
+      <div id="spawn-bar-wrap"><div id="spawn-bar"></div></div>
+    </div>
+    <div id="spawn-loading-content">
+      <div id="help-dialog-intro">
+        <p style="font-family: 'JetBrains Mono', monospace; -webkit-text-stroke: 0px; font-size: 11px; color: var(--dim); margin-top: 10px; padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(176,169,159,0.2);">Access this dialog at any time by typing "--help"</p>
+        <p style="margin-top: 10px; padding-top:10px;"><i>This map does not attempt to trace a classified system of music, nor claim to produce a true machinic reflection of high-dimensional latent space…nor conceptualize some citable vibe-machine…NOR offer an emancipatory blueprint to the "minds" of deep-learning models. Rather, it is a "renovated cartography" <a href="#[1]">[1]</a> – a field which constructs relational meaning from abstraction, alienation, and play. Its representation of embeddings is not exhaustive, yet still provides a "momentary ambience" <a href="#[2]">[2]</a> of their somatic experience.</i></p></div>
+      <div id="help-dialog-controls">
+        <div id="help-dialog-subheader">Controls</div>
+        <p>Move through the world with <span id="help-dialog-formula">WASD</span> keys.</p>
+        <p>Click to look around you; press <span id="help-dialog-formula">esc</span> to regain your cursor.</p>
+        <p>Use number keys to dérive <span id="help-dialog-formula">[1]</span>, détournée <span id="help-dialog-formula">[2]</span>, or stroll <span id="help-dialog-formula">[3]</span>.</p>
+        <p><i>(<a href="#help-dialog-navigational-styles">see navigational styles</a>)</i></p>
+        <p>Also use number keys to switch audio <span id="help-dialog-formula">[4]</span>, lyrical <span id="help-dialog-formula">[5]</span>, or combined <span id="help-dialog-formula">[6]</span> cartographical layers.</p>
+        <p><i>(<a href="#help-dialog-cartographical-layers">see cartographical layers</a>)</i></p>
+      </div>
+      <div id="help-dialog-cartographical-layers">
+        <div id="help-dialog-subheader">Cartographical layers</div>
+        <p>View your position (and where you've been) in the bottom-right minimap.</p>
+        <p>Audio: <span id="help-dialog-formula">UMAP</span> projection of 1024-dimensional audio embeddings.</p>
+        <p>Lyrical: <span id="help-dialog-formula">UMAP</span> projection of 384-dimensional semantic lyric embeddings.</p>
+        <p>Combined: <span id="help-dialog-formula">UMAP</span> projection of 512-dimensional 1:1 merged audio and lyric embeddings.</p>
+        <p><i>Hint: Be still for a moment after switching layers. Your song will come back to you.</i></p>
+        <p><i>(<a href="#help-dialog-umap-calculation">see UMAP calculation</a>)</i></p>
+      </div>
+      <div id="help-dialog-navigational-styles">
+        <div id="help-dialog-subheader">Navigational styles</div>
+        <p>Dérive: Playful, but not left to chance – be carried by currents and vortexes of the field <a href="#[3]">[3]</a>. Define a "simple algorithm" <a href="#[4]">[4]</a> with positive/negative <span id="help-dialog-formula">cos_sim</span> value. Pass through space towards a concordant ambiance. What fuzzy thresholds do you observe? Are you drawn back to old habits?</p>
+        <p>Détournée: Reroute classification – construct a new ensemble of chronology <a href="#[4]">[4]</a>, <a href="#[5]">[5]</a>. Input a year to be transported to its sonic neighborhood. Its inhabitants may not be what you expect. Has time developed new meaning?</p>
+        <p>Stroll: Wander aimlessly, without intent <a href="#[3]">[3]</a>.</p>
+      </div>
+      <div id="help-dialog-world-features">
+        <div id="help-dialog-subheader">World features</div>
+        <p>Embedding coordinates: At the site of each embedding, you will find an abstracted cartographic marker – coordinates derived from <span id="help-dialog-formula">UMAP</span> dimension reduction, rounded to the first decimal. <i>(<a href="#help-dialog-umap-calculation">see UMAP calculation</a>)</i></p>
+        <p>Neighborhood coordinates: Located in the top-left corner of the HUD, find the mean coordinates of the nearest k embeddings between your positions of origin and arrival upon navigating.<br>
+        <span id="help-dialog-formula">p̄ = (1/k) · Σᵢ eᵢ  →  [x, z] = UMAP.transform(p̄)</span></p>
+        <p>Cosine similarity: Below neighborhood coordinates, observe the degree of angular (dis)similarity between your positions of origin and arrival upon navigating.</p>
+        <p><span id="help-dialog-formula">cos_sim(A, B) = (A · B) / (‖A‖ · ‖B‖)</span><br><i>(where cos_sim=1 is the most similar)</i></p>
+        <p>(<a href="#help-dialog-navigational-styles">see navigational styles</a>)</p>
+      </div>
+      <div id="help-dialog-umap-calculation">
+        <div id="help-dialog-subheader">UMAP calculation</div>
+        <p>High dimensional embeddings have been projected onto a 2D <span id="help-dialog-formula">UMAP</span> field for human legibility. Parameters have been tuned to preserve as much raw machinic character as possible.</p>
+        <p><span id="help-dialog-formula">WORLD_SCALE=[-1000, 1000]</span> The coordinate field is scaled to account for <span id="help-dialog-formula">UMAP</span>'s small default float range:<br> <span id="help-dialog-formula">[-2.36, 10.48] x [2.48, 10.77]</span></p>
+        <p><span id="help-dialog-formula">n_neighbors=10</span> for audio field<br><span id="help-dialog-formula">n_neighbors=20</span> for lyrical field<br><span id="help-dialog-formula">n_neighbors=10</span> for combined field<br> Tuned based on trustworthiness and continuity scores from <span id="help-dialog-formula">n_neighbors=5→50</span>, comparing <span id="help-dialog-formula">UMAP</span> output and raw embedding fidelity. <i>(see full report)</i></p>
+      </div>
+      <div id="help-dialog-ghost-centroid">
+        <div id="help-dialog-subheader">Ghost centroid (habitual axis)</div>
+        <p>The spectre of your habits, haunting you through temporal space. Shaped by your gestures: dwell time, navigation, and favored cartographies. Represented as the crosshairs in the bottom-right minimap.</p>
+        <p>
+          It is calculated as a weighted centroid:<br>
+          <span id="help-dialog-formula">for i in visited_tracks:<br>
+            &nbsp;&nbsp;w_i = dwell_i · Σ(α_k · sim_k(i))<br>
+          pos_x = Σ(x_i·w_i) / Σ(w_i) = 123.45<br>
+          pos_z = Σ(z_i·w_i) / Σ(w_i) = -67.89<br>
+          year = Σ(yr_i·w_i) / Σ(w_i) = 2003.4<br>
+          α_audio 0.82      α_lyric 0.61<br>
+          α_year 0.44        α_dérive 1.00<br>
+          α_détourn 0.50   α_stroll 0.25</span>
+        </p>
+        <p>In which your time spent dwelling <span id="help-dialog-formula">(dwell_i)</span> on similar embeddings <span id="help-dialog-formula">(sim_k(i))</span> shifts the weights <span id="help-dialog-formula">(α_k)</span> of sonic versus semantic importance; importance of time; intentional versus aimless purpose. Dérive exerts an attraction towards the axis, so that drifting remains a practice of resisting one's established routes (or perhaps embracing them?).</p>
+      </div>
+      <div id="help-dialog-references">
+        <p><span id="[1]">[1]</span> G. Debord, "Introduction to a Critique of Urban Geography," 1955. <a href="https://www.bopsecrets.org/SI/urbgeog.htm">https://www.bopsecrets.org/SI/urbgeog.htm</a>.</p>
+        <p><span id="[2]">[2]</span> G. Debord, "Report on the Construction of Situations and on the International Situationist Tendency's Conditions of Organization and Action," June, 1957. <a href="https://www.bopsecrets.org/SI/report.htm">https://www.bopsecrets.org/SI/report.htm</a>.</p>
+        <p><span id="[3]">[3]</span> G. Debord, "Theory of the Dérive," 1958. <a href="https://www.bopsecrets.org/SI/2.derive.htm">https://www.bopsecrets.org/SI/2.derive.htm</a>.</p>
+        <p><span id="[4]">[4]</span> A. J. Elias, "Psychogeography, Détournement, Cyberspace," New Literary History, vol. 41, no. 4, pp. 821–845, Autumn 2010, <a href="https://dx.doi.org/10.1353/nlh.2010.0033">doi: 10.1353/nlh.2010.0033</a>.</p>
+        <p><span id="[5]">[5]</span> G. Debord and G. Wolman, "A User's Guide to Détournement," 1956. <a href="https://www.bopsecrets.org/SI/detourn.htm">https://www.bopsecrets.org/SI/detourn.htm</a>.</p>
+      </div>
+    </div>
+    <button id="spawn-enter">enter →</button>
   </div>
 </div>
 
@@ -281,19 +366,20 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 
 <div id="lyric-columns"></div>
 
+<div id="topleft">
+  <div id="title">vectors2vibes</div>
+  <div id="coords-title">neighborhood centroid</div>
+  <div id="coords">—</div>
+  <div id="similarity-title">cos_sim</div>
+  <div id="similarity">—</div>
+</div>
+<div id="hint">click to look around<br>esc to regain cursor</div>
+<div id="help-trigger">type <span style="font-family: 'Courier New', Courier, monospace; -webkit-text-stroke: 0px;">"</span>--help<span style="font-family: 'Courier New', Courier, monospace; -webkit-text-stroke: 0px;">"</span></div>
+<div id="minimap">
+  <canvas id="minimap-canvas" width="220" height="220"></canvas>
+</div>
+
 <div id="hud">
-  <div id="topleft">
-    <div id="title">vectors2vibes</div>
-    <div id="coords-title">neighborhood </div><div id="coords"></div>
-    <div id="similarity-title">cos_sim </div><div id="similarity"></div>
-  </div>
-
-  <div id="layers">
-    <button class="layer-btn active" data-layer="audio">audio</button>
-    <button class="layer-btn" data-layer="lyrical">lyrical</button>
-    <button class="layer-btn" data-layer="combined">combined</button>
-  </div>
-
   <div id="now-playing">
     <img id="np-thumb" src="" alt="">
     <div id="np-info">
@@ -302,33 +388,30 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
     </div>
   </div>
 
+  <div id="nav-status"></div>
+  <div id="layers">
+    <button class="layer-btn active" data-layer="audio">audio<span class="key">[4]</span></button>
+    <button class="layer-btn" data-layer="lyrical">lyrical<span class="key">[5]</span></button>
+    <button class="layer-btn" data-layer="combined">combined<span class="key">[6]</span></button>
+  </div>
   <div id="bottomright">
     <div id="nav-controls">
       <button class="nav-btn" data-mode="derive">dérive<span class="key">[1]</span></button>
-      <button class="nav-btn" data-mode="detourn">détourn<span class="key">[2]</span></button>
-      <button class="nav-btn" data-mode="frolic">stroll<span class="key">[3]</span></button>
-    </div>
-    <div id="minimap">
-      <canvas id="minimap-canvas" width="140" height="140"></canvas>
+      <button class="nav-btn" data-mode="detourn">détournée<span class="key">[2]</span></button>
+      <button class="nav-btn" data-mode="stroll">stroll<span class="key">[3]</span></button>
     </div>
   </div>
-
-  <div id="hint">click to look around</div>
-  <div id="nav-status"></div>
-  <div id="help-trigger">--help</div>
-</div>
-
-<div id="derive-panel">
-  <label>cosine similarity</label>
-  <input id="derive-val" type="number" value="0.7" min="0" max="1" step="0.05">
-  <div id="derive-range" style="font-size:9px; color:var(--dim); letter-spacing:1px; margin-top:2px;"></div>
-  <button id="derive-go">derive →</button>
-</div>
-
-<div id="detourn-panel">
-  <label>target year</label>
-  <input id="detourn-val" type="number" value="1980" min="1900" max="2030">
-  <button id="detourn-go">détourn →</button>
+  <div id="derive-panel">
+    <label>cosine similarity</label>
+    <input id="derive-val" type="number" value="0.7" min="0" max="1" step="0.05">
+    <div id="derive-range" style="font-size:10px; color:var(--dim); letter-spacing:1px; margin-top:2px;"></div>
+    <button id="derive-go">dérive →</button>
+  </div>
+  <div id="detourn-panel">
+    <label>target year</label>
+    <input id="detourn-val" type="number" value="1980" min="1900" max="2030">
+    <button id="detourn-go">détournée →</button>
+  </div>
 </div>
 
 <div id="help-dialog">
@@ -342,39 +425,44 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
       <div id="help-dialog-subheader">Controls</div>
       <p>Move through the world with <span id="help-dialog-formula">WASD</span> keys.</p>
       <p>Click to look around you; press <span id="help-dialog-formula">esc</span> to regain your cursor.</p>
-      <p>Use number keys to derive <span id="help-dialog-formula">[1]</span>, detourn <span id="help-dialog-formula">[2]</span>, or stroll <span id="help-dialog-formula">[3]</span>. <i><br>(<a href="#help-dialog-navigational-styles">see navigational styles</a>)</i></p>
+      <p>Use number keys to dérive <span id="help-dialog-formula">[1]</span>, détourn <span id="help-dialog-formula">[2]</span>, or stroll <span id="help-dialog-formula">[3]</span>.</p>
+      <p><i>(<a href="#help-dialog-navigational-styles">see navigational styles</a>)</i></p>
+      <p>Also use number keys to switch audio <span id="help-dialog-formula">[4]</span>, lyrical <span id="help-dialog-formula">[5]</span>, or combined <span id="help-dialog-formula">[6]</span> cartographical layers.</p>
+      <p><i>(<a href="#help-dialog-cartographical-layers">see cartographical layers</a>)</i></p>
     </div>
     <div id="help-dialog-cartographical-layers">
       <div id="help-dialog-subheader">Cartographical layers</div>
+      <p>View your position (and where you've been) in the bottom-right minimap.</p>
       <p>Audio: <span id="help-dialog-formula">UMAP</span> projection of 1024-dimensional audio embeddings.</p>
       <p>Lyrical: <span id="help-dialog-formula">UMAP</span> projection of 384-dimensional semantic lyric embeddings.</p>
-      <p>Combined: <span id="help-dialog-formula">UMAP</span> projection of 512-dimensional merged audio (weighted at x%) and lyric (weighted at x%) embeddings. <i><br>(<a href="#help-dialog-umap-calculation">see <span id="help-dialog-formula">UMAP</span> calculation</a>)</i></p>
+      <p>Combined: <span id="help-dialog-formula">UMAP</span> projection of 512-dimensional 1:1 merged audio and lyric embeddings.</p>
+      <p><i>Hint: Be still for a moment after switching layers. Your song will come back to you.</i></p>
+      <p><i>(<a href="#help-dialog-umap-calculation">see UMAP calculation</a>)</i></p>
     </div>
     <div id="help-dialog-navigational-styles">
       <div id="help-dialog-subheader">Navigational styles</div>
-      <p>Derive: Playful, but not left to chance – be carried by currents and vortexes of the field <a href="#[3]">[3]</a>. Define a “simple algorithm” <a href="#[4]">[4]</a> with positive/negative <span id="help-dialog-formula">cos_sim</span> value. Pass through space towards a concordant ambiance. What fuzzy thresholds do you observe? Are you drawn back to old habits?</p>
-      <p>Detourn: Reroute classification – construct a new ensemble of chronology <a href="#[4]">[4]</a>, <a href="#[5]">[5]</a>. Input a year to be transported to its sonic neighborhood. Its inhabitants may not be what you expect. Has time developed new meaning?</p>
+      <p>Dérive: Playful, but not left to chance – be carried by currents and vortexes of the field <a href="#[3]">[3]</a>. Define a “simple algorithm” <a href="#[4]">[4]</a> with positive/negative <span id="help-dialog-formula">cos_sim</span> value. Pass through space towards a concordant ambiance. What fuzzy thresholds do you observe? Are you drawn back to old habits?</p>
+      <p>Détourn: Reroute classification – construct a new ensemble of chronology <a href="#[4]">[4]</a>, <a href="#[5]">[5]</a>. Input a year to be transported to its sonic neighborhood. Its inhabitants may not be what you expect. Has time developed new meaning?</p>
       <p>Stroll: Wander aimlessly, without intent <a href="#[3]">[3]</a>.</p>
     </div>
     <div id="help-dialog-world-features">
       <div id="help-dialog-subheader">World features</div>
-      <p>Embedding coordinates: At the site of each embedding, you will find an abstracted cartographic marker – coordinates derived from <span id="help-dialog-formula">UMAP</span> dimension reduction, rounded to the first decimal. <i>(<a href="#help-dialog-umap-calculation">see <span id="help-dialog-formula">UMAP</span> calculation</a>)</i></p>
+      <p>Embedding coordinates: At the site of each embedding, you will find an abstracted cartographic marker – coordinates derived from <span id="help-dialog-formula">UMAP</span> dimension reduction, rounded to the first decimal. <i>(<a href="#help-dialog-umap-calculation">see UMAP calculation</a>)</i></p>
       <p>Neighborhood coordinates: Located in the top-left corner of the HUD, find the mean coordinates of the nearest k embeddings between your positions of origin and arrival upon navigating.<br>
       <span id="help-dialog-formula">p̄ = (1/k) · Σᵢ eᵢ  →  [x, z] = UMAP.transform(p̄)</span></p>
-      <p>
-        Cosine similarity: Below neighborhood coordinates, observe the degree of angular (dis)similarity between your positions of origin and arrival upon navigating. <br>(<a href="#help-dialog-navigational-styles">see navigational styles</a>)<br>
-        <span id="help-dialog-formula">cos_sim(A, B) = (A · B) / (‖A‖ · ‖B‖)</span><br><i>(where cos_sim=1 is the most similar)</i>
-      </p>
+      <p>Cosine similarity: Below neighborhood coordinates, observe the degree of angular (dis)similarity between your positions of origin and arrival upon navigating.</p>
+      <p><span id="help-dialog-formula">cos_sim(A, B) = (A · B) / (‖A‖ · ‖B‖)</span><br><i>(where cos_sim=1 is the most similar)</i></p>
+      <p>(<a href="#help-dialog-navigational-styles">see navigational styles</a>)</p>
     </div>
     <div id="help-dialog-umap-calculation">
       <div id="help-dialog-subheader">UMAP calculation</div>
       <p>High dimensional embeddings have been projected onto a 2D <span id="help-dialog-formula">UMAP</span> field for human legibility. Parameters have been tuned to preserve as much raw machinic character as possible.</p>
-      <p><span id="help-dialog-formula">WORLD_SCALE=[-1000, 1000]</span> The coordinate field is scaled to account for <span id="help-dialog-formula">UMAP</span>’s small default float range:<br> <span id="help-dialog-formula">[-2.3588107, 10.483603] x [2.4815817, 10.772468]</span></p>
-      <p><span id="help-dialog-formula">n_neighbors=10</span> for audio field and <span id="help-dialog-formula">n_neighbors=20</span> for lyrical field. Tuned based on trustworthiness and continuity scores from <span id="help-dialog-formula">n_neighbors=5→50</span>, comparing <span id="help-dialog-formula">UMAP</span> output and raw embedding fidelity. <i>(see full report)</i></p>
+      <p><span id="help-dialog-formula">WORLD_SCALE=[-1000, 1000]</span> The coordinate field is scaled to account for <span id="help-dialog-formula">UMAP</span>'s small default float range:<br> <span id="help-dialog-formula">[-2.36, 10.48] x [2.48, 10.77]</span></p>
+      <p><span id="help-dialog-formula">n_neighbors=10</span> for audio field<br><span id="help-dialog-formula">n_neighbors=20</span> for lyrical field<br><span id="help-dialog-formula">n_neighbors=10</span> for combined field<br> Tuned based on trustworthiness and continuity scores from <span id="help-dialog-formula">n_neighbors=5→50</span>, comparing <span id="help-dialog-formula">UMAP</span> output and raw embedding fidelity. <i>(see full report)</i></p>
     </div>
     <div id="help-dialog-ghost-centroid">
       <div id="help-dialog-subheader">Ghost centroid (habitual axis)</div>
-      <p>The spectre of your habits, haunting you through temporal space. Shaped by your gestures: dwell time, navigation, and favored cartographies.</p>
+      <p>The spectre of your habits, haunting you through temporal space. Shaped by your gestures: dwell time, navigation, and favored cartographies. Represented as the crosshairs in the bottom-right minimap.</p>
       <p>
         It is calculated as a weighted centroid:<br>
         <span id="help-dialog-formula">for i in visited_tracks:<br>
@@ -386,7 +474,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
         α_year 0.44        α_dérive 1.00<br>
         α_détourn 0.50   α_stroll 0.25</span>
       </p>
-      <p>In which your time spent dwelling <span id="help-dialog-formula">(dwell_i)</span> on similar embeddings <span id="help-dialog-formula">(sim_k(i))</span> shifts the weights <span id="help-dialog-formula">(α_k)</span> of sonic versus semantic importance; importance of time; intentional versus aimless purpose. Derive exerts an attraction towards the axis, so that drifting remains a practice of resisting one’s established routes (or perhaps embracing them?).</p>
+      <p>In which your time spent dwelling <span id="help-dialog-formula">(dwell_i)</span> on similar embeddings <span id="help-dialog-formula">(sim_k(i))</span> shifts the weights <span id="help-dialog-formula">(α_k)</span> of sonic versus semantic importance; importance of time; intentional versus aimless purpose. Dérive exerts an attraction towards the axis, so that drifting remains a practice of resisting one's established routes (or perhaps embracing them?).</p>
     </div>
     <div id="help-dialog-references">
       <p><span id="[1]">[1]</span> G. Debord, “Introduction to a Critique of Urban Geography,” 1955. <a href="https://www.bopsecrets.org/SI/urbgeog.htm">https://www.bopsecrets.org/SI/urbgeog.htm</a>.</p>
@@ -403,15 +491,13 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 <script>
 const SESSION_ID = 'v2v_' + Math.random().toString(36).slice(2);
 let embeddings = [], currentEmb = null, isWarping = false, weights = {};
+let lastNavMode = null;       // most recent nav style triggered
+let centroidPullStart = Infinity; // timestamp after which centroid pull activates
 let currentLayer = 'audio';
 // Matches UMAP_N_NEIGHBORS_AUDIO / LYRIC in embedding_service.py
 const LAYER_K = { audio: 10, lyrical: 20, combined: 15 };
 let minimapOffscreen = null;
 let _minimapBuildId = 0;
-
-// Dev mode: append ?dev to the URL to reduce GPU load for development on integrated graphics.
-// Has no effect in production — all values revert to their normal defaults.
-const DEV_MODE = new URLSearchParams(location.search).has('dev');
 
 // ── Scene ──────────────────────────────────────────────────────
 const scene = new THREE.Scene();
@@ -439,9 +525,9 @@ const planes = new Map(); // id → { thumbMesh, vecMesh, emb, targetThumb, targ
 // Planes are created when the camera approaches (spawnEmbedding) and destroyed when it moves away (despawnEmbedding).
 // SPAWN_R < DESPAWN_R creates a buffer zone so planes don't flicker at the boundary.
 // Tune these values if lag persists — lower = less GPU/CPU load but smaller visible neighbourhood
-const SPAWN_R    = DEV_MODE ? 60  : 150;
-const DESPAWN_R  = DEV_MODE ? 120 : 250;
-const MAX_PLANES = DEV_MODE ? 30  : 150; // hard cap — tuned for integrated GPU sharing system RAM
+const SPAWN_R    = 60;
+const DESPAWN_R  = 120;
+const MAX_PLANES = 30;
 
 // ── Helpers ─────────────────
 function hashId(id) {
@@ -580,8 +666,7 @@ function updatePlaneBudget() {
   // Spawn any embeddings within SPAWN_R that aren't yet in the scene
   for (const emb of embeddings) {
     if (planes.has(emb.id)) continue;
-    const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : currentLayer === 'combined' ? (emb.combined_coords?.[0] ?? emb.pos_x) : emb.pos_x;
-    const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : currentLayer === 'combined' ? (emb.combined_coords?.[1] ?? emb.pos_z) : emb.pos_z;
+    const [ex, ez] = getLayerPos(emb);
     const dx = ex - px, dz = ez - pz;
     if (Math.sqrt(dx*dx + dz*dz) < SPAWN_R) {
         spawnEmbedding(emb);
@@ -590,8 +675,7 @@ function updatePlaneBudget() {
 
   // Despawn planes beyond DESPAWN_R
   for (const [id, entry] of planes) {
-    const ex = currentLayer === 'lyrical' ? (entry.emb.lyric_coords?.[0] ?? entry.emb.pos_x) : currentLayer === 'combined' ? (entry.emb.combined_coords?.[0] ?? entry.emb.pos_x) : entry.emb.pos_x;
-    const ez = currentLayer === 'lyrical' ? (entry.emb.lyric_coords?.[1] ?? entry.emb.pos_z) : currentLayer === 'combined' ? (entry.emb.combined_coords?.[1] ?? entry.emb.pos_z) : entry.emb.pos_z;
+    const [ex, ez] = getLayerPos(entry.emb);
     const dx = ex - px, dz = ez - pz;
     if (Math.sqrt(dx*dx + dz*dz) > DESPAWN_R) {
         despawnEmbedding(id);
@@ -599,13 +683,10 @@ function updatePlaneBudget() {
   }
 
   // Hard cap on loaded planes; despawn furthest ones if over budget
-  
-if (planes.size > MAX_PLANES) {
+  if (planes.size > MAX_PLANES) {
     const sorted = [...planes.entries()].sort((a, b) => {
-        const aex = currentLayer === 'lyrical' ? (a[1].emb.lyric_coords?.[0] ?? a[1].emb.pos_x) : currentLayer === 'combined' ? (a[1].emb.combined_coords?.[0] ?? a[1].emb.pos_x) : a[1].emb.pos_x;
-        const aez = currentLayer === 'lyrical' ? (a[1].emb.lyric_coords?.[1] ?? a[1].emb.pos_z) : currentLayer === 'combined' ? (a[1].emb.combined_coords?.[1] ?? a[1].emb.pos_z) : a[1].emb.pos_z;
-        const bex = currentLayer === 'lyrical' ? (b[1].emb.lyric_coords?.[0] ?? b[1].emb.pos_x) : currentLayer === 'combined' ? (b[1].emb.combined_coords?.[0] ?? b[1].emb.pos_x) : b[1].emb.pos_x;
-        const bez = currentLayer === 'lyrical' ? (b[1].emb.lyric_coords?.[1] ?? b[1].emb.pos_z) : currentLayer === 'combined' ? (b[1].emb.combined_coords?.[1] ?? b[1].emb.pos_z) : b[1].emb.pos_z;
+        const [aex, aez] = getLayerPos(a[1].emb);
+        const [bex, bez] = getLayerPos(b[1].emb);
         const da = (aex-px)**2 + (aez-pz)**2;
         const db = (bex-px)**2 + (bez-pz)**2;
         return db - da;
@@ -621,8 +702,7 @@ async function prespawnAround(posX, posZ) {
   let count = 0;
   for (const emb of embeddings) {
     if (planes.has(emb.id)) continue;
-    const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : currentLayer === 'combined' ? (emb.combined_coords?.[0] ?? emb.pos_x) : emb.pos_x;
-    const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : currentLayer === 'combined' ? (emb.combined_coords?.[1] ?? emb.pos_z) : emb.pos_z;
+    const [ex, ez] = getLayerPos(emb);
     const dx = ex - posX, dz = ez - posZ;
     if (Math.sqrt(dx*dx + dz*dz) < SPAWN_R) {
       spawnEmbedding(emb);
@@ -690,8 +770,8 @@ function unlockAudio() {
     if (el.volume > 0) el.play().catch(() => {});
   }
 }
-document.addEventListener('click',   unlockAudio, { once: false });
-document.addEventListener('keydown', unlockAudio, { once: false });
+document.addEventListener('click',   unlockAudio, { once: true });
+document.addEventListener('keydown', unlockAudio, { once: true });
 
 // ── Proximity ─────────────────────────────────────────────────
 // AUDIO_R = tracks within n units of the camera start playing audio; capped by MAX_AUDIO_ELS
@@ -820,7 +900,7 @@ function makeGhostCanvas(centroid) {
     ['α_year',    weights.year_proximity     || 1],
     ['α_dérive',  weights.nav_derive         || 1],
     ['α_détourn', weights.nav_detourn        || 1],
-    ['α_frolic',  weights.nav_frolic         || 1],
+    ['α_stroll',  weights.nav_stroll         || 1],
   ];
   for (let i = 0; i < wPairs.length; i += 2) {
     const y = 162 + (i / 2) * 15;
@@ -886,7 +966,7 @@ function setNowPlaying(emb) {
 // ── Minimap ───────────────────────────────────────────────────
 const mmCanvas = document.getElementById('minimap-canvas');
 const mmCtx = mmCanvas.getContext('2d');
-const MM = 140, MM_SCALE = 0.055;
+const MM = 220, MM_SCALE = 0.055;
 
 // Async so it yields to the browser every 500 dots — prevents blocking the render loop.
 // _minimapBuildId is a cancellation token: if the layer changes mid-build, the old build exits early.
@@ -942,13 +1022,13 @@ function drawMinimap() {
     if (gx >= 0 && gx <= MM && gz >= 0 && gz <= MM) {
       mmCtx.beginPath();
       mmCtx.arc(gx, gz, 3.5, 0, Math.PI * 2);
-      mmCtx.strokeStyle = 'rgba(212,207,200,0.7)';
+      mmCtx.strokeStyle = 'rgba(212,207,200,0.87)';
       mmCtx.lineWidth = 1;
       mmCtx.stroke();
       mmCtx.beginPath();
       mmCtx.moveTo(gx - 6, gz); mmCtx.lineTo(gx + 6, gz);
       mmCtx.moveTo(gx, gz - 6); mmCtx.lineTo(gx, gz + 6);
-      mmCtx.strokeStyle = 'rgba(212,207,200,0.45)';
+      mmCtx.strokeStyle = 'rgba(212,207,200,0.75)';
       mmCtx.lineWidth = 0.75;
       mmCtx.stroke();
     }
@@ -986,7 +1066,43 @@ document.getElementById('help-dialog-close').addEventListener('click', () => {
 });
 
 document.addEventListener('keydown', e => {
-  if (document.getElementById('spawn-screen').style.display !== 'none') return;
+  const spawnVisible   = document.getElementById('spawn-screen').style.display !== 'none';
+  const deriveVisible  = document.getElementById('derive-panel').classList.contains('visible');
+  const detournVisible = document.getElementById('detourn-panel').classList.contains('visible');
+
+  // Enter: activate go button for whichever panel/screen is open
+  if (e.code === 'Enter') {
+    if (spawnVisible) {
+      const goBtn    = document.getElementById('spawn-go');
+      const enterBtn = document.getElementById('spawn-enter');
+      if (goBtn.style.display !== 'none')    { goBtn.click();    e.preventDefault(); }
+      else if (enterBtn.style.display !== 'none') { enterBtn.click(); e.preventDefault(); }
+      return;
+    }
+    if (deriveVisible)  { document.getElementById('derive-go').click();  e.preventDefault(); return; }
+    if (detournVisible) { document.getElementById('detourn-go').click(); e.preventDefault(); return; }
+  }
+
+  // Arrow up/down: step number inputs when a panel is open
+  if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+    let input = null;
+    if (spawnVisible && document.getElementById('param-vibe-year').style.display !== 'none')
+      input = document.getElementById('input-vibe-year');
+    else if (deriveVisible)  input = document.getElementById('derive-val');
+    else if (detournVisible) input = document.getElementById('detourn-val');
+
+    if (input) {
+      const step = parseFloat(input.step) || 1;
+      const dir  = e.code === 'ArrowUp' ? 1 : -1;
+      const min  = input.min !== '' ? parseFloat(input.min) : -Infinity;
+      const max  = input.max !== '' ? parseFloat(input.max) :  Infinity;
+      input.value = Math.max(min, Math.min(max, parseFloat(input.value) + step * dir));
+      e.preventDefault();
+      return;
+    }
+  }
+
+  if (spawnVisible) return;
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
   // Escape closes help dialog
@@ -1009,7 +1125,10 @@ document.addEventListener('keydown', e => {
   keys[e.code] = true;
   if (e.code==='Digit1') toggleDerive();
   if (e.code==='Digit2') toggleDetourn();
-  if (e.code==='Digit3') { document.getElementById('derive-panel').classList.remove('visible'); document.getElementById('detourn-panel').classList.remove('visible'); triggerNav('frolic'); }
+  if (e.code==='Digit3') { document.getElementById('derive-panel').classList.remove('visible'); document.getElementById('detourn-panel').classList.remove('visible'); triggerNav('stroll'); }
+  if (e.code==='Digit4') setLayer('audio');
+  if (e.code==='Digit5') setLayer('lyrical');
+  if (e.code==='Digit6') setLayer('combined');
 });
 document.addEventListener('keyup', e => { keys[e.code] = false; });
 
@@ -1035,6 +1154,13 @@ function moveCamera(delta) {
   if (keys['KeyA']||keys['ArrowLeft'])  camera.position.addScaledVector(rt,  -sp);
   if (keys['KeyD']||keys['ArrowRight']) camera.position.addScaledVector(rt,   sp);
   camera.position.y = 0;
+
+  // Centroid pull: active after derive when not dominant, cancelled by any new nav action
+  if (ghostMesh && ghostTarget.lengthSq() > 0 && performance.now() > centroidPullStart) {
+    const pull = 0.00008 * delta * 60;
+    camera.position.x += (ghostTarget.x - camera.position.x) * pull;
+    camera.position.z += (ghostTarget.z - camera.position.z) * pull;
+  }
 }
 
 // ── Stable camera facing anchor ───────────────────────────────
@@ -1091,16 +1217,58 @@ function warpTo(destEmb) {
       isWarping = false;
       currentEmb = destEmb;
       setNowPlaying(destEmb);
+      // Schedule centroid pull: only if last nav was derive AND derive is not dominant
+      if (lastNavMode === 'derive' && !isDeriveDominant()) {
+        centroidPullStart = performance.now() + 1500;
+      }
     }
   }
   requestAnimationFrame(step);
 }
 
+// ── Nav HUD update ────────────────────────────────────────────
+function getLayerCoords(embId) {
+  const emb = embeddings.find(e => e.id === embId);
+  if (!emb) return null;
+  const c = currentLayer === 'audio'   ? emb.audio_coords
+          : currentLayer === 'lyrical' ? emb.lyric_coords
+          :                              emb.combined_coords;
+  return c ? { pos_x: c[0], pos_z: c[1] } : { pos_x: emb.pos_x, pos_z: emb.pos_z };
+}
+
+function updateNavHUD(data, centroidIds) {
+  if (!data.centroid_umap) return;
+  const { pos_x: cx, pos_z: cz } = data.centroid_umap;
+  const k = LAYER_K[currentLayer];
+
+  // Neighborhood equation: all k coords summed / k = [cx,cz]
+  let neqParts = `mean(k=${k})`;
+  if (centroidIds && centroidIds.length) {
+    const parts = centroidIds.map(id => {
+      const c = getLayerCoords(id);
+      return c ? `[${Math.round(c.pos_x)},${Math.round(c.pos_z)}]` : null;
+    }).filter(Boolean);
+    if (parts.length) neqParts = `(${parts.join('+')})/${k}`;
+  }
+  document.getElementById('coords').innerHTML =
+    `<span class="eq-input">${neqParts} </span><span class="eq-result">= [${Math.round(cx)},${Math.round(cz)}]</span>`;
+
+  if (data.similarity != null && data.destination) {
+    const dest = getLayerCoords(data.destination.id)
+              || { pos_x: data.destination.pos_x, pos_z: data.destination.pos_z };
+    const dx = Math.round(dest.pos_x), dz = Math.round(dest.pos_z);
+    const sign = data.similarity >= 0 ? '+' : '-';
+    document.getElementById('similarity-title').textContent = 'cos_sim';
+    document.getElementById('similarity').innerHTML =
+      `<span class="eq-input">[${Math.round(cx)},${Math.round(cz)}] ${sign} [${dx},${dz}] </span><span class="eq-result">= ${data.similarity.toFixed(4)}</span>`;
+  }
+}
+
 // ── Typewriter nav status ──────────────────────────────────────
 const NAV_DESCRIPTIONS = {
-  derive:  'drifting toward a different era...',
-  detourn:  'navigating to the opposite embedding of your location...',
-  frolic:  'strolling to a random point in the space...',
+  derive:  'drifting to a (dis)similar place...',
+  detourn:  'navigating to a new assemblage...',
+  stroll:  'strolling to a random point in space...',
 };
 
 let _typewriterTimer = null;
@@ -1137,8 +1305,7 @@ function getCurrentCentroidIds(k = LAYER_K[currentLayer]) {
   const px = camera.position.x, pz = camera.position.z;
   const sorted = [...planes.values()]
     .map(({ emb }) => {
-      const ex = currentLayer === 'lyrical' ? (emb.lyric_coords?.[0] ?? emb.pos_x) : currentLayer === 'combined' ? (emb.combined_coords?.[0] ?? emb.pos_x) : emb.pos_x;
-      const ez = currentLayer === 'lyrical' ? (emb.lyric_coords?.[1] ?? emb.pos_z) : currentLayer === 'combined' ? (emb.combined_coords?.[1] ?? emb.pos_z) : emb.pos_z;
+      const [ex, ez] = getLayerPos(emb);
       return { emb, dist: Math.sqrt((ex - px) ** 2 + (ez - pz) ** 2) };
     })
     .sort((a, b) => a.dist - b.dist)
@@ -1147,10 +1314,20 @@ function getCurrentCentroidIds(k = LAYER_K[currentLayer]) {
   return sorted;
 }
 
+function isDeriveDominant() {
+  const d = weights.nav_derive  || 1;
+  const t = weights.nav_detourn || 1;
+  const f = weights.nav_stroll  || 1;
+  return d > t && d > f;
+}
+
 function triggerNav(mode) {
   // Console log for debugging nav
   const ids = getCurrentCentroidIds();
   console.log('centroid ids:', ids.length, ids.slice(0, 3));
+
+  lastNavMode = mode;
+  centroidPullStart = Infinity; // cancel any active pull on new nav action
 
   if (isWarping) {
     showNavStatus("can't navigate yet, still warping...");
@@ -1160,9 +1337,10 @@ function triggerNav(mode) {
   if (!currentEmb && embeddings.length) currentEmb = embeddings[0];
   if (!currentEmb) return;
   showNavStatus(mode);
+  const centroidIds = getCurrentCentroidIds();
   fetch(`/api/nav/${mode}`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ current_ids: getCurrentCentroidIds(), weights, layer: currentLayer })
+    body: JSON.stringify({ current_ids: centroidIds, weights, layer: currentLayer })
   }).then(r=>r.json()).then(data => {
     const dest = data.destination;
     if (dest) {
@@ -1170,40 +1348,42 @@ function triggerNav(mode) {
       const fullEmb = embeddings.find(e=>e.id===dest.id) || dest;
       warpTo(fullEmb);
     }
-    // Show precise UMAP projection of the mean embedding used for this nav action
-    if (data.centroid_umap) {
-      const { pos_x, pos_z } = data.centroid_umap;
-      document.getElementById('coords').textContent =
-        `(k=${LAYER_K[currentLayer]})  [${Math.round(pos_x)}, ${Math.round(pos_z)}]`;
-    }
-    if (data.similarity != null) {
-      document.getElementById('similarity').textContent =
-        `${data.similarity.toFixed(4)}`;
-    }
-    fetch('/api/listener/nav', { 
-      method:'POST', 
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ 
-        session_id: SESSION_ID, 
-        nav_style: mode,
-      }) 
+    updateNavHUD(data, centroidIds);
+    fetch('/api/listener/nav', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id: SESSION_ID, nav_style: mode }),
     });
   });
 }
 
-function toggleDerive()  { document.getElementById('derive-panel').classList.toggle('visible');  document.getElementById('detourn-panel').classList.remove('visible'); }
-function toggleDetourn() { document.getElementById('detourn-panel').classList.toggle('visible'); document.getElementById('derive-panel').classList.remove('visible'); }
+function toggleDerive() {
+  const p = document.getElementById('derive-panel');
+  p.classList.toggle('visible');
+  document.getElementById('detourn-panel').classList.remove('visible');
+  if (p.classList.contains('visible')) setTimeout(() => document.getElementById('derive-val').focus(), 0);
+}
+function toggleDetourn() {
+  const p = document.getElementById('detourn-panel');
+  p.classList.toggle('visible');
+  document.getElementById('derive-panel').classList.remove('visible');
+  if (p.classList.contains('visible')) setTimeout(() => document.getElementById('detourn-val').focus(), 0);
+}
 
 document.getElementById('derive-go').addEventListener('click', () => {
   if (!currentEmb) return;
+  lastNavMode = 'derive';
+  centroidPullStart = Infinity;
+  showNavStatus('derive');
+  const centroidIds = getCurrentCentroidIds();
   fetch('/api/nav/derive', { method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      current_ids:      getCurrentCentroidIds(),
+      current_ids:      centroidIds,
       similarity_input: parseFloat(document.getElementById('derive-val').value),
       weights,
       layer: currentLayer,
     })
   }).then(r=>r.json()).then(data => {
+    const simInput = parseFloat(document.getElementById('derive-val').value);
     if (data.destination) warpTo(embeddings.find(e => e.id === data.destination.id) || data.destination);
     if (data.sim_min != null) {
       const input = document.getElementById('derive-val');
@@ -1213,23 +1393,37 @@ document.getElementById('derive-go').addEventListener('click', () => {
       document.getElementById('derive-range').textContent =
         `range ${data.sim_min.toFixed(2)} – ${data.sim_max.toFixed(2)}`;
     }
+    updateNavHUD(data, centroidIds);
+    fetch('/api/listener/nav', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id: SESSION_ID, nav_style: 'derive', similarity_input: simInput }),
+    });
+    document.getElementById('derive-panel').classList.remove('visible');
   });
-  document.getElementById('derive-panel').classList.remove('visible');
 });
 
 document.getElementById('detourn-go').addEventListener('click', () => {
   if (!currentEmb) return;
+  lastNavMode = 'detourn';
+  centroidPullStart = Infinity;
+  showNavStatus('detourn');
+  const centroidIds = getCurrentCentroidIds();
   fetch('/api/nav/detourn', { method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      current_ids: getCurrentCentroidIds(),
+      current_ids: centroidIds,
       target_year: parseInt(document.getElementById('detourn-val').value),
       weights,
       layer: currentLayer,
     })
   }).then(r=>r.json()).then(data => {
     if (data.destination) warpTo(embeddings.find(e => e.id === data.destination.id) || data.destination);
+    updateNavHUD(data, centroidIds);
+    fetch('/api/listener/nav', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id: SESSION_ID, nav_style: 'detourn' }),
+    });
+    document.getElementById('detourn-panel').classList.remove('visible');
   });
-  document.getElementById('detourn-panel').classList.remove('visible');
 });
 
 document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
@@ -1263,10 +1457,9 @@ function computeLayerPositions(layer) {
   return pos;
 }
 
-document.querySelectorAll('.layer-btn').forEach(btn => btn.addEventListener('click', () => {
+function setLayer(layer) {
   document.querySelectorAll('.layer-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  const layer = btn.dataset.layer;
+  document.querySelector(`.layer-btn[data-layer="${layer}"]`).classList.add('active');
   currentLayer = layer;
   document.getElementById('lyric-columns').style.opacity = (layer === 'lyrical' || layer === 'combined') ? '1' : '0';
 
@@ -1331,7 +1524,9 @@ document.querySelectorAll('.layer-btn').forEach(btn => btn.addEventListener('cli
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ session_id: SESSION_ID, layer, duration_ms: 0 })
   });
-}));
+}
+
+document.querySelectorAll('.layer-btn').forEach(btn => btn.addEventListener('click', () => setLayer(btn.dataset.layer)));
 
 // ── Position lerp ─────────────────────────────────────────────
 function updatePositions() {
@@ -1352,24 +1547,37 @@ function updatePositions() {
 }
 
 // ── Spawn screen logic ─────────────────────────────────────────
-// Boot sequence: user enters birth year → world loads → camera placed at nostalgia spawn position
+// Boot sequence: user enters vibe year → world loads → camera placed at that year's spawn position
 // Spawn option selection
 document.querySelectorAll('.spawn-option').forEach(opt => {
   opt.addEventListener('click', () => {
     opt.style.borderColor = 'var(--paper)';
-    document.getElementById('param-birth-year').style.display = 'block';
+    document.getElementById('param-vibe-year').style.display = 'block';
     document.getElementById('spawn-go').style.display = 'block';
+    setTimeout(() => document.getElementById('input-vibe-year').focus(), 0);
   });
+});
+
+// Direct Enter listeners on inputs — reliable regardless of pointer lock or focus state
+document.getElementById('input-vibe-year').addEventListener('keydown', e => {
+  if (e.code === 'Enter') { e.preventDefault(); const g = document.getElementById('spawn-go'); if (g.style.display !== 'none') g.click(); }
+});
+document.getElementById('derive-val').addEventListener('keydown', e => {
+  if (e.code === 'Enter') { e.preventDefault(); document.getElementById('derive-go').click(); }
+});
+document.getElementById('detourn-val').addEventListener('keydown', e => {
+  if (e.code === 'Enter') { e.preventDefault(); document.getElementById('detourn-go').click(); }
 });
 
 // Spawn button
 document.getElementById('spawn-go').addEventListener('click', async () => {
 
   // Switch to loading view
-  document.getElementById('spawn-options').style.display = 'none';
-  document.getElementById('spawn-params').style.display  = 'none';
-  document.getElementById('spawn-go').style.display      = 'none';
-  document.getElementById('spawn-loading').style.display = 'flex';
+  document.getElementById('spawn-options').style.display  = 'none';
+  document.getElementById('spawn-params').style.display   = 'none';
+  document.getElementById('spawn-go').style.display       = 'none';
+  document.getElementById('spawn-subtitle').style.display = 'none';
+  document.getElementById('spawn-loading').style.display  = 'flex';
 
   const spawnBar = document.getElementById('spawn-bar');
   const spawnMsg = document.getElementById('spawn-loading-msg');
@@ -1380,11 +1588,11 @@ document.getElementById('spawn-go').addEventListener('click', async () => {
       spawnMsg.textContent = 'calculating spawn position...';
       spawnBar.style.width = '10%';
 
-      const birthYear = parseInt(document.getElementById('input-birth-year').value) || 1980;
+      const vibeYear = parseInt(document.getElementById('input-vibe-year').value) || 1980;
       const spawnRes = await fetch('/api/spawn/year', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ year: birthYear })
+          body: JSON.stringify({ year: vibeYear })
       }).then(r => r.json());
 
       if (spawnRes && spawnRes.destination && !spawnRes.destination.error) {
@@ -1433,6 +1641,14 @@ async function loadWorld(spawnDest, barEl, msgEl) {
   }
 
   if (barEl) barEl.style.width = '100%';
+  if (msgEl) msgEl.textContent = 'ready.';
+
+  // Show enter button and wait for user to click it
+  await new Promise(resolve => {
+    const enterBtn = document.getElementById('spawn-enter');
+    enterBtn.style.display = 'block';
+    enterBtn.addEventListener('click', resolve, { once: true });
+  });
 
   // Fade out spawn screen and start rendering
   const screen = document.getElementById('spawn-screen');
@@ -1518,7 +1734,7 @@ let last = 0;
 let _minimapFrame  = 0;
 let _positionFrame = 0;
 let _budgetFrame   = 0;
-const FRAME_MIN_MS = 1000 / (DEV_MODE ? 20 : 60); // dev mode: 20fps to minimise GPU pressure
+const FRAME_MIN_MS = 1000 / 20;
 
 function animate(now) {
   requestAnimationFrame(animate);

@@ -27,7 +27,6 @@ get_embedding_service() returns a singleton instance shared amongst the service 
 """
 
 import os
-import io
 import pickle
 import ast
 from pathlib import Path
