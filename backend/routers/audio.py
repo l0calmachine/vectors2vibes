@@ -34,7 +34,7 @@ router = APIRouter()
 HF_TOKEN      = os.environ.get("HF_TOKEN", "")
 HF_AUDIO_BASE = "https://huggingface.co/datasets/vectors2vibes/vectors2vibes-discogs-audio/resolve/main/{file_path}"
 
-LOCAL_AUDIO_DIR = os.environ.get("FILES_DIR", "")
+LOCAL_AUDIO_DIR = os.environ.get("LOCAL_AUDIO_DIR", "")
 PI_BASE_URL     = os.environ.get("PI_BASE_URL", "").rstrip("/")
 
 # ── LRU audio cache (HF proxy mode only) ─────────────────────────────────────
