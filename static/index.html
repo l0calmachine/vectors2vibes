@@ -125,7 +125,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 #full-report-close {
   background: none; border: none; color: var(--dim);
   font-size: 12px; letter-spacing: 2px; cursor: pointer; padding: 0;
-  -webkit-text-stroke: 0px;
+  -webkit-text-stroke: 0px; margin-left: auto;
 }
 #full-report-close:hover { color: var(--paper); }
 #full-report-body {
@@ -1209,15 +1209,19 @@ document.addEventListener('keydown', e => {
     }
   }
 
-  if (spawnVisible) return;
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-  // Escape closes full report dialog (first), then help dialog
+  // Escape closes full report dialog regardless of which screen is open
   if (e.key === 'Escape') {
     if (_fullReportDialog.classList.contains('visible')) {
       closeFullReport();
       return;
     }
+  }
+
+  if (spawnVisible) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  // Escape closes help dialog when full report is not open
+  if (e.key === 'Escape') {
     _helpDialog.classList.remove('visible');
     _helpBuf = '';
     return;
