@@ -1,0 +1,544 @@
+<div class="report-title">FuzzySounds</div>
+
+<div class="report-subtitle">Mapping Multimodal Tracks in Experimental Interface</div>
+
+<div class="report-authors">Ema Kinsel, Greg Marren, Sofia Rossi, Tam Le, Kamran Gasimov, Martina Schneider</div>
+
+<div class="report-date"><i>Published: 24 April 2026</i></div>
+
+<div class="report-h3"><br>Abstract</div>
+<p>Embedding-based recommendation systems increasingly mediate cultural experience by translating music into high-dimensional vector representations that organize digital objects by computationally determined similarity. <i>FuzzySounds</i> reimagines these embeddings through an experimental interface as an immersive, navigable environment. Drawing on a dataset of over 24,000 musical tracks, the project uses audio, lyric, and combined embeddings to produce multiple spatial representations of cultural relations. By engaging with theoretical concepts of pyschogeography and Situationist ideas of <i>dérive</i> and <i>détournement</i>, navigation of this space is oriented through drift, disruption, and chance rather than destination-centered selection. Users encounter dense, cacophonous soundscapes that foreground ambiguity, affect, and disorientation, highlighting how algorithmic proximity produces experiential “vibes”. By translating computational structures into perceptual encounters, the interface highlights the gap between computational representation and cultural experience.</p>
+
+<div class="report-intro">
+  <p><i>How can latent space representations of music be transformed into an affective, navigable interface that enables users to explore techno-cultural “vibes”?</i></p>
+</div>
+
+<div class="report-h1">1. Introduction</div>
+<p>In the context of digital sonic experiences, culture is no longer shaped solely by shared traditions and values, but increasingly by the ways cultural meaning is produced, circulated, and reorganized within dense and ephemeral media environments. Digital recommendation systems are among the most pervasive mediators of cultural experience in contemporary life. Streaming playlists, recommendation bubbles, likes, shares, and notification systems do not merely reflect existing preferences, but rather actively calibrate perception, mood, and temporal experience. These algorithmically mediated environments amplify the sense that culture is both personal and collective at once. Users encounter cultural forms that feel personally resonant, yet are often globally echoed through platform infrastructures (Brown et al., 2025). The notion of late modern cultural reality provides a useful framework for thinking about this condition, especially through the concept of abstracted cultural coherence, a form of sharedness that emerges not from direct social life, but from repeated exposure to the same platforms and algorithmically curated content (Clausen, 2025).</p>
+<p>Involved in the processes underlying recommendation systems are fundamental transformations and reconfigurations of cultural artifacts to be made machine readable. Embedding generation is a central component of machine learning (ML) architecture; it is the process by which deep learning models come to ‘understand’ structured and unstructured data, deriving weights through a mathematical comparison of object ‘features’. Embeddings are fundamentally relational representations – unable to exist in isolation, they are drawn from the relative (dis)similarities between the constituent elements (features) of digital objects. In this vein, embedding can be considered an instance of what Situationist philosophy refers to as <i>détournement</i>, an act in which it becomes “an element which has no importance in itself and which thus draws all its meaning from the new context in which it has been placed” (Debord, 1956).</p>
+<p>It is with these processes of transformation and recontextualization that occur between vectorization and vibes that we introduce an experimental interface: the <i>FuzzySounds</i> project. Rather than attempting to ‘illuminate’ the black box of latent space, <i>FuzzySounds</i> instead attempts to immerse users sensorily within an embedding-defined environment of cacophonous sound through which they can ‘feel’ their way and explore – thus developing a new kind of techno-synesthetic listening.  The goal of this environment is not to trace a classified system of music, “nor offer an emancipatory blueprint to the ‘minds’ of deep learning models,” (Kinsel et al., 2026) but to construct a “renovated cartography” (Debord, 1955): a field which constructs relational meaning from abstraction, alienation, and play.</p>
+<p>Users are invited to consider the sensory and affective experiences of arranged tracks against their corresponding metadata in an attempt to explore the gap between collective cultural experience and computational representations. The environment is derived from two-dimensional projections of embeddings generated from Discogs release data (Arraz, Serra, and Bogdanov, 2024; Discogs, 2026). Though the interface representation of embeddings is not exhaustive of their total dimensionality, it still provides a “momentary ambience” (Debord, 1957) of their somatic experience and positionality. These embeddings are multi-modal: the first cartographical layer is generated from the track audio using the audio processing model MERT, while the second is based on semantic mapping of song lyrics using a multi-model transcription pipeline including OpenAI’s Whisper and sentence transformers. To produce a richer representation of songs that captured both of these modalities, the first and second layers were then reduced in dimensionality and merged to produce a third, combined embedding layer. Within the interface, these embedding layers act as different planes of movement: alternate abstractions of the same landscape which gain greater interpretability through common points of reference. We ask users, how do you define the cluster or ‘neighborhood’ that a song occupies, and how does this differ between layers? </p>
+<p>The interface through which users navigate draws on Situationist concepts of <i>dérive</i> and <i>détournement</i>, repurposing them as navigational styles within the virtual environment. <i>Dérive</i> refers to a mode of movement guided by chance, atmosphere, and affect rather than utility or fixed direction. <i>Détournement</i> refers to the recontextualization of existing materials in order to reveal new meanings, which relates to the project’s attempt to repurpose recommendation logic as a way of uncovering cultural relations instead of simply optimizing retrieval. Navigation is not directed toward personalization or optimized retrieval, but rather around displacement, unpredictability, and affective drift. In adapting this logic into a navigable embedding space, the project does not simply apply Situationist aesthetics as a metaphor, but engages them as operation principles: the structure of the space, the behavior of its navigation functions, and the sonic experiences of proximity are all organized around the production of encounter. </p>
+
+<div class="report-h1">2. Theoretical Framework</div>
+
+<div class="report-h2">2.1 From Vectors to Vibes</div>
+
+<div class="report-h3">Affect and Vibes</div>
+<p><i>Mille Plateaux</i> (Deleuze and Guattari, 1980) supplies a powerful, indirect framework for understanding affect, technology and power. Theory of affect is treated as intensive capacities to affect and be affected. Affect theory examines how non-linguistic forces such as intensities, sensations, and bodily functions can shape experiences and sociability, distinct from conscious emotion. Affects are relational and differential, they are not properties of individuals, but shifts in the capacity to act at the level of the whole assemblage (Massumi, 2002). Based on such theories, traditional recommender systems on popular music-listening platforms can be treated as machinic assemblages: a composite arrangement of code and data infrastructures that produce subjectivities, tastes, and foster attention (Colebrook, 2004). Based on the notion of desiring production (Deleuze and Guattari, 1980), such systems do not respond to existing desires, but rather actively produce and modulate desire and preference by amplifying listening habits, looping genres, and nudging trajectories. This process involves both deterritorialization, where users are exposed to new content and associations, and reterritorialization, where these exposures are captured into stabilized patterns such as playlists, profiles, and mood-based categorizations (Kutz, 2026).</p>
+<p>In this context, recommender systems function as machines of modulation. Instead of fixing users into static categories, they continuously adjust the relations between content and user, producing micro-shifts in perception, attention, and behavior. Affect becomes central to this process. As Hagen et al. (2025) argue, contemporary media operate through an “affective and aural turn,” where concepts such as flow, resonance, atmosphere, and rhythm replace representational logics as primary organizing principles. More than transmitting content, platforms deploy affect and structure how bodies become attuned to “shared energies, how vibrations come(s) to matter meaningfully” (Hagen et al. 2025), and how atmospheres are collectively experienced.</p>
+<p>It is within this <i>affective</i> regime that the concept of vibe emerges. Vibes are not simply aesthetic descriptors but vernacular articulations of these underlying processes. As Robin James (2021) argues, “vibes are how we see ourselves the way algorithms see us”; they translate the epistemic and perceptual logics of machine learning into experiential terms. Where embeddings compute similarity through high-dimensional proximity, vibes register this proximity as felt resonance. They can be seen as the phenomenological correlate of computational relation.</p>
+<p>Brown, Carah, and Dobson (2025) further argue that contemporary platforms operate through “vibey” infrastructures, in which the “deep neural networks that organise flows of content on digital media platforms …behave in particularly ‘vibey’ ways… they treat culture in associative, proximity-oriented, modular, and non-narrative ways (Brown et al, 2025, 12). This is enabled by techniques such as dense retrieval and embedding-based similarity, which structure feeds as continuous gradients rather than discrete categories. The resulting experience is one of ambient coherence, a sense that content “fits together” without requiring explicit explanation.</p>
+<p>This produces a recursive dynamic between platform logic and user practice. Users increasingly produce content that is itself optimized for vibey circulation, aesthetic, affective, and atmospheric, while algorithmic systems organize and amplify these forms. The “vibe” thus becomes both a mode of cultural production and a mode of algorithmic ordering. It operates as a “structure of feeling”, namely “pre-emergent, non-conscious, relational, and ambient” (Brown et al., 2025, 22).</p>
+<p>Crucially, this shift is not neutral. Vibes have become a central unit of value within affective capitalism. As Brown et al. (2025, 5) note, “vibes are what automated models tune in order to make value.” Because they operate below the level of explicit cognition, they enable forms of capture that are continuous and difficult to resist. Vibes align users with flows of content, sustain attention without requiring interpretation, however Doruff (2006, 4) demonstrates how late capitalism exploits affect for its surplus value. From this perspective, platforms such as TikTok or Spotify exemplify a paradigm shift toward vibey attention economies (Brown et al., 2025), where engagement is driven by continuous affective alignment rather than explicit preference. Scrolling becomes a form of navigating latent clusters of similarity, moving through neighborhoods of content defined by embedding proximity. The feed is experienced as a vibe: a continuous, self-adjusting atmosphere that reflects and shapes the user’s orientation within the system.</p>
+<p>Understanding vibes therefore requires engaging with their computational substrate. Grietzer (2017) proposes that vibes can be understood analogously to the internal logic of autoencoders, where complex data is compressed into a latent representation that captures its essential structure. In this sense, a vibe corresponds to a kind of generative schema or “formula” that defines a space of possibilities. Just as an autoencoder learns to reconstruct inputs through a compressed latent code, users grasp a vibe by sensing the underlying coherence that links disparate elements into a unified atmosphere. This analogy highlights the structural relation between vibes and latent space. Vibes are not arbitrary or purely subjective; they are grounded in the relational organization of data. They can be understood as a form of cognitive mapping, allowing users to navigate complex environments through felt proximity rather than explicit knowledge. At the same time, this mapping is shaped by the biases and limitations of the underlying data and models, embedding specific cultural, geographic, and ideological assumptions into the space of possible relations (James, 2021). The increasing centrality of vibes within digital culture therefore raises a critical problem: if platforms operate by producing and exploiting affective alignment, then understanding how vibes are constructed becomes essential. This involves examining how computational systems translate heterogeneous cultural artifacts into relational representations, how these representations are organized into clusters and flows, and how they are experienced as atmospheres.</p>
+
+<div class="report-h2">2.2 Psychogeography and Dérive</div>
+
+<div class="report-h2">Dérive</div>
+<p>The concepts of <i>dérive</i> and détournement emerge from the theoretical and experimental practices of the Situationist Internationale, particularly articulated by Guy Debord in the late 1950s. They function as aesthetic strategies: <i>dérive</i> operates at the level of navigation and experience (phenomenology), while <i>détournement</i> operates at the level of meaning-making and recomposition (praxis and hermeneutics) (Elias 2010, 824). Together, they form a methodology for playfully constructing “situations” to challenge the hegemonic capitalistic society. A situation is a deliberately constructed moment or environment designed to intensify experience and reawaken perception. By “reinventing space to renew perception,” (Elias 2010, 825) Situationists hope to “radically challenge alienation and boredom generated by the capitalist spectacle” (Elias 2010, 825) and restore “the authentic journey” (Elias 2010, 826). Within this interface, the aesthetic strategies of the Situationists are applied to digital space in order to construct a new situation of playfulness and subversiveness.</p>
+<p><i>Dérive</i> refers to a mode of movement through space characterized by the suspension of habitual motivations and the embrace of affective guidance. Rather than navigating according to utility (e.g., destination-oriented travel, efficiency, or routine), participants in a <i>dérive</i> relinquish instrumental goals and allow themselves to be drawn by the “attractions of the terrain” (Debord 1958) and the encounters that emerge within it. This process is not equivalent to randomness, but rather a “privileging the unpredictable over the routine and habitual,” (Doruff 2006, 1) entailing a “playful constructive behaviour” (Elias 2010, 824).  Debord (1958) explicitly distinguishes <i>dérive</i> from arbitrary wandering as the environment itself contains structuring forces – so-called psychogeographical “currents,” “fixed points,” and “vortices” that influence movement in subtle ways. Movement is “dictated by simple <i>algorithms</i> that curtailed randomness without prescribing exact or motivated direction” (Elias 2010, 824, emphasis added). The participant becomes attuned to gradients such as sensory cues and affective intensities, navigating not by explicit decision-making but through a sensitivity to shifts in atmosphere, rhythm, and vibes.</p>
+<p>Importantly, <i>dérive</i> privileges play over function. It is a kind of walk through space that evinces a  “will to playful creation” (Elias 2010, 825) that distinguishes the walk from traditional notions of the stroll. Where conventional navigation emphasizes orientation, control, and efficiency, <i>dérive</i> emphasizes aimlessness, openness, and experimentation (Hartmann 2003). By doing so, <i>dérive</i> can be seen as “the concrete representation of (...) life” (Elias 2010, 825) aiming to create authentic pleasure and critiquing the routinized, instrumental engagement with environments, be they urban or digital. Applied to our experimental interface, <i>dérive</i> is used as an aesthetic of play to ‘drift’ through sonic cyberspace as a “transient passage through changing ambiances” (Hartmann 2003, 4).</p>
+
+<div class="report-h3">Détournement</div>
+<p>If <i>dérive</i> concerns movement through space, détournement concerns the transformation of meaning within that space. A <i>détournement</i> reorders “materials in order to expose their banality or function within a system of spectacular control and creatively reconstruct them in the service of authenticity” (Elias 2010, 825). The effectiveness of <i>détournement</i> relies on the tension between recognition and transformation. The viewer must retain some awareness (conscious or semi-conscious) of the original context in order to perceive the shift. For this reason, the Situationists emphasize that distortions should be minimal. In his laws that govern <i>détournement</i>, Debord (1956) emphasises that excessive modification reduces the recognizability of the original element, thereby weakening the effect, as the impact lies in strategic displacement, not in radical alteration. Furthermore, <i>détournement</i> loses force the more it approaches a rational reply, since its power lies in affective and associative resonances (Debord, 1956). <i>Détournement</i> thus operates as a critique of what Debord calls the “spectacle” – the system of representation that organizes perception in capitalist society. By reusing and reconfiguring existing materials, it exposes their constructed nature and disrupts their apparent coherence, at the same time opening space for alternative meanings and interpretations. </p>
+
+<div class="report-h3">Psychogeography and Cultural Geography</div>
+<p>Both concepts, <i>dérive</i> and <i>détournement</i>, are grounded in psychogeography, defined as the “study of precise laws and specific effects of the geographical environment (…) on the emotions and behaviour of individuals” (Elias 2010, 821). Psychogeography hopes to document the mental reactions to specific places, including digital space in the context of this project. Space is reframed as an active agent that causes affective responses through “purposeful disorientation” (Doruff 2006, 4). These emotional responses or <i>mappings</i> are produced through dérive and generate somatic maps that do not correspond to real space (Elias 2010, 826).</p>
+<p><i>Cultural geography</i>is a subfield of human geography that explores how cultural practices, values, and identities are shaped by and shape geographic landscapes/spaces (Balasubramanian, 2018). How is culture expressed spatially based on things like language, religion, and architecture? Such practice draws on interdisciplinary methods to interrogate how technology and artificial intelligence act both as a disruptor and conserver of cultural systems. As Alsaleh (2024, 5) writes, platforms “fundamentally alter the materiality of cultural expression and memory” and have become indispensable for the evolution of culture; human and non-human actors play a role in the expansion of cultural and technological webs.</p>
+<p>Cultural semiotics as the study of culture as a system of signs displays the extent to which digital spaces foster new systems of cultural meaning and expression – revealing that digitally produced environments do not simply host culture, but actively reorganize social, cultural, and political relations. The relationship between culture and technology is not necessarily linear or deterministic, but constitutes different processes of mutual shaping and change (Alsasleh, 2024). Our tool becomes a map of cultural geography as a cartography of mediated culture turning spatial relations into ways of organizing cultural disparities. The <i>dérive</i> navigation shapes cultural meaning, becomes a way of moving through a culturally coded space while making spatial organization of platformed culture perceptible.</p>
+
+<div class="report-h3">Digital Dérive and Cyber-Psychogeography </div>
+<p>To situate psychogeography within its contemporary conditions – namely the digital environment or cyberspace – it is necessary to extend Debord’s notion of the <i>spectacle</i> into the present configuration of late capitalism. For Debord, the spectacle describes a regime in which social relations are mediated by representations, producing a separation between lived experience and its mediated image (Hartmann 2003, 4). In this framework, individuals become passive spectators, consuming preconstructed realities rather than actively shaping them.</p>
+<p>However, under late capitalism this model undergoes a significant transformation. Rather than relying solely on visual representation and passive consumption, contemporary systems increasingly operate through <i>affect</i> (Doruff 2006, 4). As theorized by Dean (2010), digital networks are structured by what she terms drive: a logic of repetition, circulation, and affective engagement. Here, participation itself – such as liking, sharing, remixing, reposting – becomes the primary mechanism through which value is generated. The subject is no longer positioned as a distant observer but as an active participant whose engagement fuels the system (Doruff 2006, 4) This shift marks what is often described as the <i>affective turn</i>. In this configuration, capitalism does not merely represent experiences but actively mobilizes and exploits affective intensities, like feelings, moods, and vibes as sources of “surplus value” (Doruff 2006, 4). It thrives on difference, variation, and improvisation, continuously producing new stimuli to sustain engagement. It is in this sense Doruff (2006) claims that the spectacle has become affective, operating through the modulation of attention, emotion, and desire.</p>
+<p>A key consequence of this transformation is the incorporation of previously oppositional or subversive practices. Techniques associated with the Situationists, such as <i>dérive</i> and <i>détournement</i>, are no longer external critiques but are often already embedded within the logic of digital systems. Remixing, recombination, and playful navigation are standard features of contemporary platforms (Dean, 2010). As Dean (2010) argues, these practices of participation do not interrupt circulation, but intensify it and thereby contribute to communicative capitalism. Each act of repetition or recombination produces a “little nugget of enjoyment,” (Dean 2010, 37) reinforcing the user’s attachment to the network while simultaneously generating data and value.</p>
+<p>This creates a structural paradox, as participation feels agentic and expressive, yet it reproduces the very system it might appear to challenge. The continuous loops of  repetitive engagement and endless circulation constitute what Dean (2010, 37) describes as an “acephalous circuit” of drive, a self-perpetuating system without a clear endpoint, a “flow” that captures the “subjects, intensities, and aspirations”of the networks of communicative capitalism. Meaning, intention, and critique become secondary to the affective momentum of circulation itself. Within this context, the role of <i>dérive</i> and <i>détournement</i> must be reconsidered. Their original function as tools to disrupt the spectacle is complicated by the fact that the spectacle now operates through similar mechanisms: variability, play, and affective engagement. The spectator has become a proactive participant, but this activity is prestructured by platform architectures that channel movement and interaction along predictable pathways (Dean, 2010).</p>
+<p>As a result, practices wanting to challenge the dominant (now affective) spectacle, cannot simply appeal to rational critique, but have to engage at the same level affective modulation. As Doruff (2006, 4) suggests, the task is to “meet affective modulation with affective modulation,” using subversive aesthetics and play to overturn the “closed logical categories associated with the Spectacle and ideological master narrative” (Elias 2010, 822). These aesthetics should “unearth and awaken the human, thought, and somatics of perception” (Elias 2010, 841) to unsettle routine patterns of navigation and engagement.  The intervention of these Situationist concepts lies in the reorganization of perception and experience thereby creating new <i>situations</i>. The newly created situations then should privilege play, disorientation, and aimless explorative movement that can reactivate sensory and affective dimensions that are otherwise flattened by standardized interfaces. This is what our project hopes to achieve: the construction of a situation where users are free to explore and experiment with their changing surroundings, guided by their own feelings and aesthetic sense rather than a recommender system. The following sections explore how these Situationist practices are applied to our project to “attack boredom and generic thinking” (Elias 2010, 841) and translated into alternative computational forms of navigation.</p>
+
+<div class="report-h2">2.3 Navigation</div>
+<p>The Situationist movement seeks to expose the mechanisms through which consumer society structures everyday life, arguing that capitalism transforms perception itself into a marketplace (Debord, 1956). For Debord, modern society is organized around images, where lived experience is replaced by mediated appearance and passive observation (Rodriguez, 2025). Within the spectacle, people relate to one another through mediated systems that shape what can be seen and felt, thereby reconfiguring social life through representation rather than direct participation. The spectacle is not only an aesthetic condition but a social one: it structures relations themselves.</p>
+<p>Our experimental interface can be read as a response to this condition. It is not merely a visualization layer, but a social environment that shapes how users navigate and encounter the space in relation to cultural objects within the system itself. By turning latent space into an area of movement, the design allows users to move beyond the position of passive spectator and become active drifters inside a mediated field. In Debordian terms, the spectacle separates people from direct participation and turns experience into representation. <i>FuzzySounds</i> contrasts this logic by giving the user agency, making their path visible and experiential.</p>
+<p>The interface extends this Situationist logic through several navigation modes: <i>dérive</i>, <i>détournée</i>, and <i>stroll</i>. These modes resist the frictionless logic of platform optimization by introducing displacement, unpredictability, and sensory exploration. <i>Détournement</i> is especially relevant here, since it refers to the Situationist strategy of recontextualizing existing cultural forms in order to reveal and subvert their dominant function. In our interface, recommendation logic is not rejected outright but repurposed so that similarity becomes a site of drift rather than a mechanism of efficient retrieval. The user is thus invited to encounter culture through its relations, gaps, and deviations rather than through a scripted path.</p>
+<p>For Debord, tools can reconfigure social relations by making mediation experiential rather than invisible. Instead of consuming culture as a spectacle of prearranged images, users move through a computational environment where connection, distance, and <i>drift</i> become part of the encounter itself. The interface creates social relations in two interrelated ways. First, it changes the relation between user and music where tracks are no longer received as isolated items, but as connected positions in a shared landscape. The tracks encountered share a sensory space, each playing simultaneously, with volume dependent on the user’s proximity in a collage of soundscapes. At any given moment, the user experiences the track not as a discrete cultural artifact but as a constituent of a computationally defined aggregate, thereby recontextualizing the encounter between user and song according to processual logics. Second, it changes the relation between user and system, because the user becomes aware that movement is shaped by algorithmic structure rather than by pure preference. This resonates with the Debordian claim that the spectacle is a relation among people mediated by images, except that here the relation is mediated by vibes, embeddings, and spatial interaction rather than passive image consumption.</p>
+
+<div class="report-h1">3. Methodology and Data</div>
+
+<div class="report-h2">3.1 Data Collection</div>
+<p>24,677 unique tracks released between 1890-2026 were gathered. The metadata and audio for an initial batch were extracted using Discogs-VI-YT (Arraz, Serra, and Bogdanov, 2024) – a dataset of ~493k YouTube ID-matched tracks derived from the 20240701 Discogs release data. Time and storage limitations restricted our sample size to ~65k tracks, which was further filtered to 22,629 based on YouTube ID-video match confidence level (match_type ≥ 1) and yt-dlp accessibility. Our postprocessing pipeline enriched the dataset with earliest track release years from MusicBrainz (MetaBrainz Foundation, 2026) to combat the sparse and often misleading (i.e., in the case of remasters or collections) release year metadata from Discogs.</p>
+<p>A secondary batch was gathered from the 20260301 Discog’s release data (Discogs, 2026)  to supplement the underrepresentation of recent music between 2000–2026 in the original dataset. Here, individual Discogs-VI and Discogs-VI-YT scripts were tailored for our purposes: XML parsing, metadata cleaning, and querying/downloading YouTube audio using yt-dlp. A target of 5.5k tracks (enough to balance out the overrepresented dataset decades) was used to search the 20260301 Discogs release data for candidates, referencing Discog’s release year metadata. As MusicBrainz earliest release year metadata can only feasibly be enriched post-Discogs XML filtering – and only a limited amount of tracks were confidently matched with a YouTube video and accessible to yt-dlp – our collection pipeline returned ≤ 40% of the target. The final secondary batch count yielded 2,126 tracks matching MusicBrainz earliest release date metadata between 2000-2026. Future enrichment batches following the 2000-2026 batch protocol with a larger target size should yield more fruitful results. The final dataset decade and genre distribution breakdown is available in Appendix A.</p>
+<p>Hugging Face repositories were built to store metadata, album art thumbnail files, and audio files independently (Vectors2Vibes, 2026a, 2026b, 2026c). While the metadata and thumbnail repositories are public, the audio repository remains private to comply with YouTube’s TOS and copyright law (Google LLC, 2022). All metadata and embeddings derived from the data collection and embedding pipelines were merged into one master parquet file for serving to the interface. See Appendix B for full parquet format and source information.</p>
+
+<div class="report-h2">3.2 Compute Embeddings</div>
+<p>Traditionally, embeddings are representations of words in a vector space. Functioning as the universal numerical representation, embeddings carry meaning while also discarding certain information in the shadows of their unintelligible dimensions (Burrell, 2016; Brunila, 2025). This notion is rooted in the SMART information retrieval system, also known as TF-IDF, in which certain information, such as the word sequence, is omitted during destructive document modeling (Salton et al., 1975; Drucker and Offert, in press). In our project, we extend this by experimenting with more recent applications within the audio domain. The latent representation of music lays the foundation for these sensory atmospheres, mapped out using acoustic, semantic, and contextual similarities among embeddings.</p>
+Rather than exploring generative artificial intelligence, typically exemplified by encoder-decoder models, we follow the logic of embeddings to explore the vector space of culture and its intelligible messiness. In other words, it is an attempt to critically engage with the machinic modes of understanding cultural artifacts and thereby introduce an alternative method for traversing the corpus.
+<p>Notably, all three models employed – MERT for audio embeddings, Whisper for transcription, and all-MiniLM-L6-v2 for lyric embeddings – were pre-trained on general corpora, enabling robust performance across diverse recording conditions, languages and musical styles without task-specific fine-tuning. This is particularly relevant given the compositional breadth of the dataset, spanning several decades and a wide variety of recording conditions. While transfer learning approaches of this kind may perform unevenly across underrepresented languages, their generalisability makes them well-suited to a corpus of this scale.</p>
+
+<div class="report-h3">Audio Embeddings</div>
+<p>To compute audio embeddings and enable an acoustic mode of exploration, MERT-v1-330M was employed – a music understanding model incorporating large-scale self-supervised training developed by Li et al. (2024). It marks the most recent development in the Music Audio Pre-training model family, including the widely known music2vec model. MERT captures both pitched and tonal attributes in music, performing well across 14 downstream music understanding tasks, including key detection, instrument classification, and beat tracking. Given its extensive scale, it is particularly suited to our dataset, which varies wildly in its date range and thus also in sound quality. One limitation may stem from MERT's training on 5-second audio signals, which the authors note may affect its understanding of extended musical pieces.</p>
+<p>Audio embeddings were computed in Google Colab by streaming audio directly from the Hugging Face repository and passing it through the MERT pipeline. Due to computational capacity and efficiency, the embedding generation process involves cutting every song into 30-second chunks, resampling them to the model’s rate (24kHz), and returning 1024-dimensional embeddings. We then stacked these embeddings and averaged them to obtain a single song-level embedding for each song. An incremental save system was set up to locally save every 500 song embeddings to a CSV file, which was subsequently merged into a single parquet file.</p>
+<p>The first round of embedding outputs revealed that the dataset includes multiple versions of the same tracks (e.g. covers or re-releases) with  minor differences. These ‘duplicates’ were initially skipped over so that each title was processed only once. However, each variant carries unique cultural significance, which varies widely across generational, geographical, and socio-cultural backgrounds. Choosing one version as the “original” undermines this factor and may omit meaningful data. For this reason, the decision was made to retain all versions of every track.</p>
+
+<div class="report-h3">Lyric Embeddings</div>
+<p>To enable semantic music retrieval, lyric-based embeddings were generated for each track. Audio transcription was performed using the base model of OpenAI Whisper, selected for its strong multilingual performance and ability to withstand diverse recording conditions without requiring fine-tuning (Radford et al., 2022) - a crucial quality when considering the date range of the data set. The generated transcripts were then encoded into 384-dimensional vectors using the all-MiniLM-L6-v2 sentence transformer from Huggingface, chosen due to its efficiency and suitability to clustering and semantic similarity comparisons (Reimers & Gurevych, 2019; Wang et al., 2020).</p>
+<p>Processing was partially conducted on Google Colab as well as on a GPU provided by the university, with the audio being streamed from Huggingface. An incremental checkpoint system was implemented to save every 50 tracks to a parquet file: the computational requirements of the processing necessitated this, as a potential disconnect from Colab’s runtime could result in all of the embeddings being wiped.</p>
+<p>Several issues were encountered during the embedding process. Most importantly, the initial run produced duplicate records when sessions were interrupted and resumed, leading to only 11,000 unique tracks in the finished dataset when there should have been over 24,000. This was fixed by removing all duplicates and putting safeguards in place to verify tracks by their id before processing. Furthermore, Google Colab’s limit on GPU usage considerably slowed down the embedding by forcing it to run on CPU. This made locally executing the code impractical: the decision was therefore made to ask our supervisors to run it on university GPUs.</p>
+<p>The quality of Whisper transcriptions presented additional challenges. A large portion of the dataset consists of instrumental tracks, which produced hallucinated outputs rather than empty transcripts: this is a well-documented behavior of Whisper on non-vocal audio (Koenecke et al., 2024). Common hallucination patterns observed included repeated phrases such as “Pomp and Circumstance” across multiple unrelated instrumental tracks, and repetitive sequences of words.</p>
+<p>Two mitigation strategies were implemented to detect such cases. First, Silero VAD (Voice Activity Detection) was applied to each track to measure the proportion of audio containing speech. This value was then stored as a metadata column (vad_speech_fraction) for later filtering of instrumentals. Second, a quality assessment was applied to each transcript checking for insufficient length, single-sentence output, and high word repetition rates. Transcripts failing these checks triggered a retry using the larger Whisper medium model, with a whisper_fallback column recorded to indicate which tracks required this. Where the medium model also failed to produce a satisfactory transcript - typically on purely instrumental tracks - the embedding was computed from an empty string, resulting in a zero vector that could be identified and excluded from downstream tasks by cross-referencing with the vad_speech_fraction value.</p>
+
+<div class="report-h3">Combined Embeddings</div>
+<p>To enable a third mode of spatial exploration, a combined embedding layer was built by fusing the audio and lyric embeddings into a unified representation. This layer is intended to capture both the acoustic and semantic dimensions of each song, producing a representation that reflects the interaction between sound and meaning rather than either modality in isolation.</p>
+<p>Prior to fusion, each embedding space was independently reduced using Principal Component Analysis (PCA). The number of components was determined empirically by identifying the threshold at which 95% of the variance in each space was explained. This analysis revealed that the audio embeddings were highly compressible: approximately 110 components were sufficient to capture 95% of variance from the original 1024 dimensions, suggesting that a large portion of the audio embedding dimensions encode redundant or correlated information. The lyric embeddings proved considerably less redundant, requiring approximately 250 components to reach the same threshold from 384 dimensions. As such, the identified threshold for the lyric embeddings was taken as the minimum number of target components for both instances of PCA reduction. Both spaces were then reduced to 256 components each and concatenated into a joint embedding of 512 dimensions, with songs lacking lyric data represented by their audio embedding alone in the first 256 dimensions, ensuring that instrumental tracks are positioned meaningfully in the space rather than being distorted by absent lyric signal.</p>
+<p>The combined layer constitutes a third projection alongside the independent audio and lyric layers, visualized through UMAP for display in the interface. The combined layer is intended to produce neighborhoods that are coherent across both acoustic and semantic dimensions. Songs that sound similar and share thematic or lyrical affinity should cluster more tightly here than in either of the single-modality layers, while songs that are acoustically similar but semantically divergent, or vice versa, will occupy more diffuse regions. This multi-layer approach allows users to experience how the same dataset produces different cultural geographies depending on which features of the music are foregrounded, directly engaging with the project's broader interest in the gap between computational representation and cultural experience.</p>
+
+<div class="report-h2">3.3 Experimental Interface Design</div>
+<p>The experimental interface is itself constructed as a “situation” (Debord, 1955, 1957, 1958; Debord and Wolman, 1956) in its stitching together of technology and culture; human and machine. Contra the passive experience of a mainstream embedding encounter (e.g., scrolling through social media), the interface leads users into active confrontation with deep learning associations. Finding balance between prescriptive and anarchic presentations, the user interface seeks to invoke the praxis of <i>détournement</i> in its design by leaning into the “uneasiness” (Debord, 1955) – or outright unpleasantness – of raw, machinic data. Instructions take on the curt, imperative conjugation of prompting – <i>how does it feel to be the agent?</i> Its rhetoric offers no attempt to make interpretation easy: “written descriptions can be no more than passwords to this great game” (Debord, 1958).
+Long, computational equations appear in the help dialog, heads-up display (HUD), and floating amongst densely packed embeddings. What may appear mathematically dense renders visible the logic that recommender systems, “curatorial power” (Prey, 2020), and “master narratives” (Elias 2010, 825) make opaque: cosine similarity, user behavior tracking, and reflexive curation. By getting our hands dirty with numbers, what paths may open that are normally foreclosed upon by “user-friendly” normalization?</p>
+<p>A hijacking of the consciousness (<i>Who am I? Where am I?</i>) extends to the aural, visual, and tactile senses. An unrelenting collage of the ten nearest tracks propels the user toward or away from their affective arrangements. Moving through the visual space feels like an endless pulling back of veils which continue to be placed disorientingly close to the eyes. Key commands put the user in direct contact with the keyboard as a “primitive interface,” folding human and machine embodiment into each other (Elias 2010, 828). The inability to fully “zoom out” from one’s immediate surroundings forces the somatic perspective into something inescapable. The images themselves are passed through a preprocessing pipeline which applies OpenCV’s Canny Edge Detection to severely compressed images – preserving a readable visual structure using computer vision techniques (Bradski, 2000).</p>
+Of course, this interface runs the risk of falling into the realm of performatively critical, <i>en vogue</i> digital art – perhaps nothing more than an “interactive spectacle” (Elias, 2010; Best and Kellner 1999, 144). Already, the visual design reiterates norms of a <i>human</i>-imagined cyberspace vibe, with its references to void-space and streams of code. Moreover, our imitations of recommender-style elements are merely simplified approximations of blackboxed platform algorithms and could therefore not perform a truly radical critique of their operationalization. Important to note, however, is that this was never our intention anyway. Less parody and more <i>poiesis</i>, this interface has no revolutionary aims – it just hopes for a playful disruption.
+<p>Navigation through the embedding space is implemented through two complementary modes. The first is positional: users move through the two-dimensional UMAP projection directly, traversing the cultural geography of the space by proximity. The second mode operates through a set of discrete actions that use cosine similarity in the full-dimensional embedding space to determine movement. The <i>dérive</i> action accepts a user-defined similarity value between -1 and 1, locating songs within a tolerance range of that similarity to the current position and selecting one at random as the new destination. Positive values pull the user toward acoustically and semantically similar songs, while negative values push toward dissimilar ones, operationalizing the Situationist concept of drift as a user-directed affective vector rather than an optimized pathway (Elias 2010, 824). The <i>détournement</i> action transports the user to the centroid of a target year's song embeddings, landing them in the neighborhood that most closely represents the sonic character of that period. Rather than functioning as mere historical retrieval, this recontextualizes the user's position within a computational reading of an era’s cultural sound, consistent with the Situationist practice of détournement as a displacement of meaning (Elias 2010, 825). The <i>stroll</i> action introduces structured unpredictability, relocating the user to a randomly selected song below a fixed similarity threshold of 0.9, resisting the optimized pathways characteristic of conventional recommendation logic. Together these actions constitute a navigation vocabulary oriented toward exploration and encounter rather than retrieval and optimization, operationalizing dérive as an interaction within a computational environment.</p>
+
+<div class="report-h3">UMAP Projection</div>
+<p>Visible in the lower left corner of the HUD, the cartographical layers’ UMAP projection is the closest “big picture” view afforded to the user. Performing dimension reduction on high-dimensional deep learning outputs, UMAP builds a readable field by approximating the data’s relational structure as a “fuzzy” topology (McInnes and Healy, 2018). Critical for human conception of relational embedding space, its flattening of high-dimensional vectors is also the most notable betrayal of machinic reality. Attempts to minimize UMAP abstraction include parameter tuning, removing a set random state to prevent deterministic output (UMAP geography changes when the cache is cleared), and basing in-world calculations (i.e., HUD neighborhood coordinates, cosine similarity) on embedding values, rather than UMAP coordinates.</p>
+<p>UMAP’s n_neighbors parameter was tuned for each cartographical layer to preserve the relational structure of the embedding data. N_neighbors drives the range to which UMAP will look “to learn the manifold structure of the data” (McInnes, 2018). To determine the appropriate n_neighbors value, we created <i>tune_umap_neighbors.py</i>: a script which runs scikit-learn’s trustworthiness module (Scikit-learn developers, 2024) – penalizing false positive data points which may enter into “neighborhood relationships that are not present in the data” (Venna and Kaski, 2006) – in conjunction with a measure of local continuity as developed by Venna and Kaski (2006) to address the opposing problem of closely related data points being pushed apart as false negatives. Trustworthiness and continuity scores were calculated on projections using n_neighbors values: 5, 10, 15, 20, 30, and 50. Results showed the most balanced high scores as follows: n_neighbors=10 for audio embeddings layer (0.9042 trustworthiness, 0.9619 continuity); n_neighbors=20 for lyrical embeddings layer (0.8359 trustworthiness, 0.8824 continuity); n_neighbors=10 for combined embeddings layer (0.9149 trustworthiness, 0.9452 continuity). <i>Tune_umap_neighbors.py</i> also outputs UMAP projections for each n_neighbor value iteration for visual comparison (see fig. 1).</p>
+
+<div class="report-figure">
+  <table class="report-table">
+    <tbody>
+      <tr>
+        <td><img src="/static/figures/scatter_combined_n05.png"></td>
+        <td><img src="/static/figures/scatter_combined_n10.png"></td>
+        <td><img src="/static/figures/scatter_combined_n50.png"></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="report-caption"><em>Figure 1.</em> Tune_umap_neighbors.py UMAP projection outputs for n_neighbors=5, 10, and 50 on the combined embeddings layer.</div>
+</div>
+
+<p>UMAP coordinates are used to label tracks in space on the x/z axis (rounded to the first decimal), but all other in-world calculations utilize layer-appropriate embeddings for their calculations. As mentioned previously, navigation styles operationalize <i>k</i>-point “neighborhoods” as a relational representation, where <i>k</i> is the n_neighbors value per cartographical layer. These neighborhoods are determined by finding the <i>k</i> nearest tracks in 2D space using Euclidean distance and passing their IDs to the navigation service, which pulls the respective embeddings from the layer-aware embedding matrix. The mean embedding value is calculated and resolved back to a UMAP coordinate. Neighborhood coordinates are viewable in the HUD’s upper-left corner along with their computational logic: <i>p̄ = (1/k) · Σᵢ eᵢ  →  [x, z] = UMAP.transform(p̄).</i><br>
+Cosine similarity – central to the <i>dérive</i> navigation style – calculates the angle of (dis)similarity between the user’s neighborhood of origin and singular destination track in high-dimensional space. Its HUD display shows representational UMAP coordinates as equational variables: <i>cos_sim(A, B) = (A · B) / (‖A‖ · ‖B‖)</i>. All UMAP projections are scaled to a field size of x/z=[-1000, 1000] for interface usability – a compromise on raw representation which we deemed necessary to make UMAP’s default output legible (e.g., x=[-2.36, 10.48] and z=[2.48, 10.77]; changes with every cache clear).
+</p>
+
+<div class="report-h3">Ghost Centroid</div>
+<p><i>“The spectre of your habits, haunting you through temporal space.”</i><br>
+(Kinsel et al., 2026)</p>
+<p>The ghost centroid acts as a gravitational “habitual axis” (Debord, 1958) – what can be read as our imitation of the territorialized recommender. Though it continually floats throughout the field, users will find themselves drawn towards it upon dériving, until dérive becomes the dominant mode of navigation – as Debord (1958) anticipated in its nascent practice. The centroid locates itself with UMAP coordinates projected from a calculation of weighted embeddings – in turn, derived from the user’s gestures: track dwell time, dominant navigation styles, and dominant cartographical layers. For each visited track <i>i</i>, a weight is calculated based on dwell time and return visits:</p>
+
+<div class="report-formula"><i>dwell_i = duration_ms_i × (1 + (visits_i − 1) × 0.5)</i></div>
+
+<p>The user’s mean layer-aware (matrix) embedding is then derived by multiplying each embedding by its weight/dwell time fraction:</p>
+
+<div class="report-formula"><i>mean_emb += emb_matrix[data['idx']] * (track_weight / total_dwell)</i></div>
+
+<p>And indexed against the embedding matrix to find tracks which match the user’s mean cos_sim input:</p>
+
+<div class="report-formula"><i>cosine_similarity([mean_emb], emb_matrix)</i></div>
+
+<p>This process can be conceptualized as:</p>
+
+<div class="report-formula"><i>w_i = dwell_i · Σ(α_k · sim_k(i))</i></div>
+
+<p>Where <i>sim_k(i)</i> is the cosine similarity between track <i>i</i> and <i>mean_emb</i> in cartographical layer <i>k,</i> and <i>α_k</i> are weighted factors shaped by user gestures. All weights are initially set to 1.0, and are updated as user behavior is learned with each gesture. <i>α_audio</i> determines sonic affinity; <i>α_lyric</i> determines semantic affinity; <i>α_year</i> adjusts temporal pull; <i>α_derive</i> adjusts the weight of cosine similarity drift based on the user’s mean cos_sim value inputs; <i>α_detourn</i> adjusts the weight of temporal pull; <i>α_stroll</i> controls the level of stochastic noise.</p>
+<p>The final embedding output is resolved to an in-world position by finding its nearest neighbor in the full embedding matrix (using the same cosine similarity formula as above) then projecting that embedding’s UMAP coordinates. Thus, the ghost centroid’s coordinates and mean year can be conceptualized as:</p>
+
+<div class="report-formula">
+  <i>
+    pos_x = Σ(x_i·w_i) / Σ(w_i)<br>
+    pos_z = Σ(z_i·w_i) / Σ(w_i)<br>
+    year = Σ(yr_i·w_i) / Σ(w_i)
+  </i>
+</div>
+
+<p>In which <i>x_i</i> and <i>z_i</i> are each track’s UMAP coordinates and <i>yr_i</i> is each track’s earliest release year. As with the in-world calculations mentioned in the previous section, all values are pulled from high-dimensional space to maintain as close a proximity to true embedding relations as possible.</p>
+
+<div class="report-h1">4. Discussion</div>
+<p>The interface of any digital environment should be understood as an active mediator rather than a neutral window. Our tool does not simply visualize vector space, but converts abstraction into a navigable environment that actively shapes how users experience this type of immersive listening. This is one reason the tool can be considered a critical intervention into recommendation culture. Instead of smoothly optimizing users toward consumption, it foregrounds the threshold where machine relations become perceptible as atmosphere, drift, and mood. In this sense, the project aligns with affect theory, which understands feeling not as a private interior state but as something produced relationally, through encounters among bodies, spaces, media, and surroundings (Anderson, 2009; Ahmed, 2004).</p>
+<p>Latent proximity turned into a lived experience within a digital environment makes these relations visible. In the case of this project, latent space can be understood as an affective environment in which proximity, distance, and movement produce experienced vibes rather than just coordinates (Colebrook, 2004). Latent space, visual form, and sonic response do not operate as separate layers, instead collaboratively creating a mediated atmosphere in which users encounter tracks as relational vibes, not fixed objects. The project becomes an affective playground of technological mediation.</p>
+<p>By allowing users to move through tracks by way of proximity and detour, the tool demonstrates that AI systems do not merely predict preference, but also produce a world of relations in which culture is reorganized as vibe and alignment. This is where the project intersects with theories of algorithmic culture and hidden mediation. Embeddings and similarity metrics appear technical and neutral, yet they encode cultural judgments about what belongs together, what counts as near, and what can be made adjacent. The structural opacity of machine learning systems (Burrell, 2016) becomes especially significant because the interface converts an invisible computational arrangement into an experiential one, that may not always be a peaceful listening experience, but an unpredictable one, allowing users to experiment with their own senses.</p>
+
+<div class="report-h2">4.1 Autoethnography as Affective Documentation</div>
+<p>Because the project is concerned with affective experience, we included autoethnographic note-taking as part of the research process. As the system operates through affective modulation, which can be understood as translating vector relations into experiential “vibes”, its evaluation depends on documenting lived encounters. Psychogeography provides the relevant framework, particularly through the practice of the <i>dérive</i>. As articulated by Hartmann (2003), this approach aims to “record the mental reactions to particular places,” treating emotional disorientation as analytically productive. The <i>dérive</i> therefore produces insight through immersion in unstable, shifting environments. Within this project, the interface constitutes such an environment. The autoethnographic notes that follow helped us examine whether the interface produced the kind of affective disorientation that the project aimed to create.</p>
+<p>After selecting a year, the user is placed into a latent space structured by embedding relations across three layers: audio, lyrical, and combined. When first entering the space, users were not presented with a familiar playlist, search bar, or recommendation feed. Instead, they were dropped into a field of tracks, coordinates, sounds, and visual fragments. This produced an initial sense of uncertainty: where am I, what am I hearing, and how should I move? It is this uncertainty that heightens the user’s attention to their surroundings, creating a new perception that can be understood as part of the constructed situation.</p>
+<p>The help dialog can be accessed to find out how to navigate – presenting a quick understanding of the project – but these did not fully stabilize the experience. Instead users learn through movement. This is important because it distinguishes the interface from conventional recommender systems, which are designed to minimize friction and make the user feel immediately oriented. Here, friction becomes productive, as it asks the user to become aware of their own movements, choices, and sensory responses. Navigation is facilitated through Situationist-inspired functions (<i>dérive, détournée,</i> and <i>stroll</i>) which shape how movement unfolds across this terrain.</p>
+<p>The initial encounter foregrounds affect before interpretation. The most immediate sensation emerges through sound: a dense layering of musical fragments resembling an orchestra playing without coordination. The sound becomes messy, immersive, and sometimes overwhelming. This produces a form of listening that is closer to wandering through a sonic terrain than selecting individual songs. The result is dissonance, producing discomfort and a sense of unease. Visually, a large, semi-transparent, pixelated face (the cover of an album) dominates the screen, contributing to an uncanny atmosphere associated with liminal digital spaces. Together, these elements generate a strong impression of instability and lack of control, where the environment resists coherent interpretation. This moment reveals how the system configures an affective field: the user encounters a simultaneous presence of multiple musical elements, collapsing distinctions between individual tracks into a continuous sensory overlap. The resulting atmosphere carries tension and ambiguity, shaping the user’s orientation toward the space. The user’s position shapes what they hear, but the environment also pushes back through unexpected combinations, noisy overlaps, and sudden shifts in atmosphere. This supports the project’s claim that the interface does not simply display latent space, but also makes it experientially active.</p>
+<p>When engaging the <i>dérive</i> function, movement becomes guided by latent proximities, allowing the system to direct the trajectory. As the user moves through a cluster associated with rock music, album covers appear in varying degrees of familiarity. A moment of recognition emerges with Adele’s <i>21</i>. This recognition operates on both visual and auditory levels; her voice becomes distinguishable within the surrounding sonic density. Familiarity reorganizes perception, enabling the user to isolate elements within the broader soundscape. This encounter produces a clear affective shift. The earlier discomfort gives way to curiosity and excitement. Recognition introduces a sense of orientation without fully stabilizing the environment. The space remains expansive and only partially legible, maintaining a balance between coherence and unpredictability. The decision to use the <i>stroll</i> function introduces another mode of engagement. This function relocates the user to a random position, creating a discontinuity in spatial experience. The anticipation associated with this movement reflects a different affective orientation, centered on surprise and openness to new encounters. The system thus supports multiple experiential modes, each shaped by distinct navigation logics.</p>
+<p>In the interface, users do not navigate according to a fixed goal or optimized recommendation path. Instead, they respond to what pulls them: a sound, a cluster, a visual object, a year, a sudden change in atmosphere, or a point of confusion. This is where the project differs from conventional music recommendation. A recommender system attempts to infer what the user wants and reduce the distance between desire and consumption. Our interface does the opposite. It expands the space between user and object. It asks users to stay with uncertainty, to follow partial attractions, and to move through the relations between songs rather than toward a final selection. The resulting experience is not necessarily comfortable. It can feel disorienting, noisy, and strange. However, this discomfort is central to the project’s critical ambition. It interrupts the smoothness of platform listening.</p>
+<p>Documenting these transitions provides insight into how affect operates within the interface. The user’s experience unfolds through sequences of disorientation, recognition, and anticipation, each tied to specific interactions with the system. Psychogeography enables an interpretation of these dynamics by framing space as an active generator of emotional and perceptual responses. The autoethnographic notes suggest that the interface creates a form of playful estrangement. Users recognize familiar elements: songs, years, maps, coordinates, movement controls. Yet these elements are displaced from their usual context. A song is no longer simply a track to be played; it becomes a point in a computational geography. A year is no longer just metadata; it becomes a possible temporal pull. Similarity is no longer an invisible recommendation mechanism; it becomes a path, atmosphere, or vibe. This is where <i>détournement</i> becomes relevant. The project takes the logics of recommendation and recontextualizes them as tools for drift rather than optimization. The project thereby functions as an experimental setting for examining how computational systems organize affect. It demonstrates how latent structures translate into lived experiences, shaping perception, orientation, and engagement within digitally constructed spaces.</p>
+
+<div class="report-h1">5. Limitations</div>
+<p>Despite the quality control measures described in the lyric embeddings section being implemented, perfect transcription accuracy cannot be guaranteed. Whisper is known to hallucinate on instrumental audio, generating entirely fabricated texts when it cannot clearly detect speech (Koenecke et al., 2024). Even on vocal tracks, transcription errors are inevitable, particularly for older, lower-quality recordings, heavily accented or stylized vocal deliveries, and for languages underrepresented in Whisper’s training data. These errors propagate directly into the lyric embeddings, since these are encoded from the generated transcripts rather than from official lyrics. The aforementioned whisper_fallback and vad_speech_fraction columns allow for the identification of affected tracks and manual flagging of hallucinated lyrics on instrumental tracks, but they do not correct transcription errors in vocal tracks.</p>
+<p>Moreover, vectors used in the project operate in 384 dimensions (lyric), 1024 dimensions (audio) and 512 dimensions (combined). Visualizing them outside of latent space requires reducing them to 2 dimensions via UMAP, which inevitably involves compression of the original structure. UMAP preserves local neighborhood relations relatively well, but global structure is not reliably preserved: this means that the distances between clusters and the overall “shape” of the space as displayed in the interface may not accurately reflect the underlying geometry. This is not a flaw specific to this project, but an inherent constraint of projecting high-dimensional data into real space. The interface should therefore be understood as an approximation of latent space rather than a 1:1 representation.</p>
+<p>The difference in vector length between lyric and audio also required dimensional reduction to make them the same size, using PCA. While it is a well-established technique that minimizes information loss by retaining the directions with the greatest variance, it is still a lossy process: dimensions that individually carry little variance are discarded, even if they might have encoded meaningful information collectively. As mentioned in the combined embeddings section, around 5% of variance was lost in the reduction process – only a small amount, but distortion nonetheless.</p>
+<p>Furthermore, the Discogs dataset from which the corpus was drawn skews heavily towards Western popular music, particularly from the 20th century and in the English language. Because the embeddings are derived from this corpus, the vector spaces they produce reflect these imbalances. Music that is well-represented occupies denser, more differentiated regions of space with meaningful fine-grained distinctions between neighboring tracks, while music from underrepresented regions, languages or genres is pushed towards the periphery or grouped less accurately. This is a cultural limitation as well as a technical one: the space employs a particular, geographically situated version of music, which should be kept in mind when interpreting any patterns observed within it.</p>
+<p>An additional limitation of the mapping is that embedding similarity is a measure of proximity learned from statistical patterns in the training data, not a measure of human-perceived meaning or thematic resonance. Two songs may be positioned close together because they share surface-level acoustic or semantic features – a similar tempo, instrumentation, or vocabulary – without sharing any deeper emotional or narrative significance. Conversely, two tracks that a human listener might recognize as conceptually related may be separated in the space because their surface features differ. Of course, ‘meaning’ is heavily context-dependent and shaped by personal and collective experiences that no model can encode: thus the interface must be seen as a tool for exploration rather than a definitive map of musical meaning.</p>
+
+<div class="report-h1">6. Conclusion</div>
+<p>This project aims to translate latent musical similarities into an explorable environment, reimagining embeddings not just as technical but as spaces of cultural encounter. By combining audio and lyric embeddings with psychogeographic navigation methods such as <i>dérive</i>, <i>détournement</i>, and <i>stroll</i>, the interface makes visible the ways recommendation systems organize music into relational vibes rather than neutral categories. In doing so, it demonstrates that algorithmic systems do not simply reflect taste, but actively shape how culture is perceived. Such a project demonstrates the limitations and compromises involved with working with high dimensional cultural data, illustrating how visualizing latent space is partial and mediated. These factors help frame the research project to critically argue that computational windows are not transparent lenses to explore culture, but rather digital architectures that produce their own forms of meaning. <i>FuzzySounds</i> suggests a new way of engaging with music recommendation systems by foregrounding exploration instead of optimization, and lived experience over abstract similarity.</p>
+
+<div class="report-disclosure">
+  <div class="report-h2"><i>GenAI Disclosure</i></div>
+    <p><i>Generative AI tools were used in a limited, supportive capacity during this project. Claude Sonnet 4.6 was the most extensively used to assist with interface development (“vibe-coding”) and also used in the implementation of the lyric embedding pipeline.</i></p>
+</div>
+
+<div class="report-appendix">
+  <div class="report-h1">Appendix A</div>
+  <p>The final dataset decade and genre distribution breakdown is as follows:</p>
+
+  <p>Table A1<br>
+  <i>Final dataset decade distribution</i></p>
+
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>Decade</th>
+        <th>Distribution</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1890s</td>
+        <td>0.2%</td>
+      </tr>
+      <tr>
+        <td>1900s</td>
+        <td>0.6%</td>
+      </tr>
+      <tr>
+        <td>1910s</td>
+        <td>0.2%</td>
+      </tr>
+      <tr>
+        <td>1920s</td>
+        <td>1.8%</td>
+      </tr>
+      <tr>
+        <td>1930s</td>
+        <td>4.4%</td>
+      </tr>
+      <tr>
+        <td>1940s</td>
+        <td>5.4%</td>
+      </tr>
+      <tr>
+        <td>1950s</td>
+        <td>14.7%</td>
+      </tr>
+      <tr>
+        <td>1960s</td>
+        <td>19.6%</td>
+      </tr>
+      <tr>
+        <td>1970s</td>
+        <td>15.4%</td>
+      </tr>
+      <tr>
+        <td>1980s</td>
+        <td>14.8%</td>
+      </tr>
+      <tr>
+        <td>1990s</td>
+        <td>13.9% (+1.36% from secondary batch)</td>
+      </tr>
+      <tr>
+        <td>2000s</td>
+        <td>6.7% (+1.67% from secondary batch)</td>
+      </tr>
+      <tr>
+        <td>2010s</td>
+        <td>2.1% (+0.83% from secondary batch)</td>
+      </tr>
+      <tr>
+        <td>2020s</td>
+        <td>0.1% (only from secondary batch)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><br>Table A2<br>
+  <i>Top 5 genre distribution</i></p>
+
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>Genre</th>
+        <th>Distribution</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Jazz</td>
+        <td>38.1%</td>
+      </tr>
+      <tr>
+        <td>Pop</td>
+        <td>26.5%</td>
+      </tr>
+      <tr>
+        <td>Rock</td>
+        <td>25.0%</td>
+      </tr>
+      <tr>
+        <td>Folk, World, & Country</td>
+        <td>14.2%</td>
+      </tr>
+      <tr>
+        <td>Latin</td>
+        <td>9.9%</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="report-appendix">
+  <div class="report-h1">Appendix B</div>
+
+  <p>Table B1<br>
+  <i>Master_dataset.parquet format and source information</i></p>
+
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>Column</th>
+        <th>Source</th>
+        <th>Description</th>
+        <th>Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>file_path</td>
+        <td>Processed</td>
+        <td>Audio path (private HF repo)</td>
+        <td>01/01eJ74hd9.ogg</td>
+      </tr>
+      <tr>
+        <td>id</td>
+        <td>YT</td>
+        <td>YT video ID</td>
+        <td>01eJ74hd9</td>
+      </tr>
+      <tr>
+        <td>version_id</td>
+        <td>Discogs</td>
+        <td>Discogs track ID</td>
+        <td>V-0096447</td>
+      </tr>
+      <tr>
+        <td>release_id</td>
+        <td>Discogs</td>
+        <td>Discogs album/release ID</td>
+        <td>9904590</td>
+      </tr>
+      <tr>
+        <td>master_id</td>
+        <td>Discogs</td>
+        <td>Discogs master canon ID</td>
+        <td>111836</td>
+      </tr>   
+      <tr>
+        <td>track_title</td>
+        <td>Discogs</td>
+        <td>Cleaned title</td>
+        <td>I Think About It All The Time</td>
+      </tr>
+      <tr>
+        <td>earliest_release</td>
+        <td>MusicBrainz</td>
+        <td>Earliest year of track release (may not match album/release_title)</td>
+        <td>2024</td>
+      </tr>
+      <tr>
+        <td>discogs_released</td>
+        <td>Discogs</td>
+        <td>Discogs year of release (sparse; unreliable)</td>
+        <td>2012</td>
+      </tr>
+      <tr>
+        <td>release_artist_names</td>
+        <td>Discogs</td>
+        <td>Artist name(s)</td>
+        <td>['Charlie XCX']</td>
+      </tr> 
+      <tr>
+        <td>release_title</td>
+        <td>Discogs</td>
+        <td>Album/release</td>
+        <td>Brat</td>
+      </tr>
+      <tr>
+        <td>release_genres</td>
+        <td>Discogs</td>
+        <td>Genre</td>
+        <td>['Electronic', 'Pop']</td>
+      </tr> 
+      <tr>
+        <td>release_styles</td>
+        <td>Discogs</td>
+        <td>Subgenres; styles</td>
+        <td>['Dance-pop', 'Electro House']</td>
+      </tr> 
+      <tr>
+        <td>country</td>
+        <td>Discogs</td>
+        <td>Country of release</td>
+        <td>US</td>
+      </tr>
+      <tr>
+        <td>labels</td>
+        <td>Discogs</td>
+        <td>Record label</td>
+        <td>['Atlantic']</td>
+      </tr> 
+      <tr>
+        <td>duration</td>
+        <td>YT</td>
+        <td>Duration (sec.)</td>
+        <td>188</td>
+      </tr> 
+      <tr>
+        <td>youtube_video</td>
+        <td>Discogs</td>
+        <td>Possible YT video matches w. match_type</td>
+        <td>[{'url': 'https://www.youtube.com/watch?v=sZSpQwL2nks', 'source': 'youtube_query', 'match_type': 1}]</td>
+      </tr>
+      <tr>
+        <td>webpage_url</td>
+        <td>YT</td>
+        <td>YT video url</td>
+        <td>https://www.youtube.com/...</td>
+      </tr>
+      <tr>
+        <td>thumbnail</td>
+        <td>YT</td>
+        <td>YT thumbnail url</td>
+        <td>https://i.ytimg.com/vi/...</td>
+      </tr>
+      <tr>
+        <td>thumbnail_path</td>
+        <td>Processed</td>
+        <td>Thumbnail path (public HF repo)</td>
+        <td>thumbnails/01/01eJ74hd9.jpg</td>
+      </tr>
+      <tr>
+        <td>source_corpus</td>
+        <td>MTG/Discogs</td>
+        <td>Origin</td>
+        <td>Discogs-VI-YT-20240701</td>
+      </tr> 
+      <tr>
+        <td>ingest_batch</td>
+        <td>Processed</td>
+        <td>Internal export date</td>
+        <td>20260228-audio-batch</td>
+      </tr>  
+      <tr>
+        <td>audio_embedding</td>
+        <td>MERT-v1-330M</td>
+        <td>1024-dim audio embedding vector</td>
+        <td>[ -0.016071385, 0.01969921, ...]</td>
+      </tr> 
+      <tr>
+        <td>lyric_embeddings</td>
+        <td>all-MiniLM-L6-v2</td>
+        <td>384-dim lyric embedding vector from transcript</td>
+        <td>[ -0.017627323046326637, -0.08944163471460342, ...]</td>
+      </tr> 
+      <tr>
+        <td>transcribed_lyrics</td>
+        <td>Whisper</td>
+        <td>Lyric transcript</td>
+        <td>"Why do you search your heart..."</td>
+      </tr>  
+      <tr>
+        <td>lyric_language</td>
+        <td>Whisper</td>
+        <td>Lyric language detection</td>
+        <td>en</td>
+      </tr> 
+      <tr>
+        <td>whisper_fallback</td>
+        <td>Whisper</td>
+        <td>Boolean value indicating whether a the robust medium Whisper model was used in the case of low-quality transcripts</td>
+        <td>false</td>
+      </tr> 
+      <tr>
+        <td>vad_speech_fraction</td>
+        <td>Silero VAD</td>
+        <td>Percentage of audio containing speech</td>
+        <td>0.1251</td>
+      </tr> 
+      <tr>
+        <td>combined_embedding</td>
+        <td>Processed</td>
+        <td>512-dim combined audio+lyric embedding vector</td>
+        <td>[ 0.2042229575000474, 0.030878279911066103, ...]</td>
+      </tr>
+      <tr>
+        <td>embedding_type</td>
+        <td>Processed</td>
+        <td>Mixed embedding labels</td>
+        <td>audio+lyric</td>
+      </tr>               
+    </tbody>
+  </table>
+</div>
+
+<div class="report-refs">
+  <div class="report-h2">References</div>
+  <p>Alsaleh, Abdullah. 2024. “The Impact of Technological Advancement on Culture and Society.” Scientific Reports 14 (1): 32140. https://doi.org/10.1038/s41598-024-83995-z.</p>
+  <p>Anderson, Ben. 2009. “Affective Atmospheres.” Emotion, Space and Society 2 (2): 77–81. https://doi.org/10.1016/j.emospa.2009.08.005.</p>
+  <p>Araz, R. Oguz, Xavier Serra, and Dmitry Bogdanov. 2024. “Discogs-VI: A Musical Version Identification Dataset Based on Public Editorial Metadata.” arXiv:2410.17400. Preprint, arXiv, October 22. https://doi.org/10.48550/arXiv.2410.17400.</p>
+  <p>Ash, James. 2015. “Technology and Affect: Towards a Theory of Inorganically Organised Objects.” Emotion, Space and Society 14 (February): 84–90. https://doi.org/10.1016/j.emospa.2013.12.017.</p>
+  <p>Balasubramanian, A. 2018 Basics of Cultural Geography. Mysore, India: University of Mysore, Centre for Advanced Studies in Earth Science. https://doi.org/10.13140/RG.2.2.31894.65604.</p>
+  <p>Barrett, Frederick, Kevin Grimm, Richard Robins, Tim Wildschut, Constantine Sedikides, and Petr Janata. 2010. “Music-Evoked Nostalgia: Affect, Memory, and Personality.” Emotion 10 (June): 390–403. https://doi.org/10.1037/a0019006.</p>
+  <p>Best, Steven, and Douglas Kellner. 1999. “Debord, Cybersituations, and the Interactive Spectacle.” SubStance 28 (3): 129–56. https://doi.org/10.1353/sub.2006.0002.</p>
+  <p>Bradski, Gary. 2000. "The OpenCV Library." Dr. Dobb's Journal of Software Tools.</p>
+  <p>Brown, Maria Gemma, Nicholas Carah, and Amy Shields Dobson. 2025. “The Vibe Factory: Intimacy, Affective Capitalism, and Digital Media.” In Postdigital Intimacies and the Networked Public-Private, edited by A. Evans, J. Hakim, J. Ringrose, A. S. Dobson, and S. McGlotten. UCL Press. https://espace.library.uq.edu.au/view/UQ:3ce5296.</p>
+  <p>Brown, Maria Gemma, Nicholas Carah, Xue Ying (Jane) Tan, Daniel Angus, and Jean Burgess. 2024. “Finding the Future in Digitally Mediated Ruin: #nostalgiacores and the Algorithmic Culture of Digital Platforms.” Convergence 30 (5): 1710–31. https://doi.org/10.1177/13548565241270669.</p>
+  <p>Brunila, Mikael. 2025 “Cosine Capital: Large Language Models and the Embedding of All Things.” Big Data & Society 4. https://doi.org/10.1177/20539517251386055. </p>
+  <p>Burrell, Jenna. 2016. “How the Machine ‘Thinks’: Understanding Opacity in Machine Learning Algorithms.” Big Data & Society 3 (1). https://doi.org/10.1177/2053951715622512. </p>
+  <p>Clausen, Albert Kirmanen. 2025. “A Brief Theoretical Examination of Late Modern Cultural Reality.” Theory & Psychology 35 (6): 755–74. https://doi.org/10.1177/09593543251378107.</p>
+  <p>Colebrook, Claire. 2004. "The Sense of Space: On the Specificity of Affect in Deleuze and Guattari." Postmodern Culture 15 (1). https://pmc.iath.virginia.edu/issue.904/15.1colebrook.html.</p>
+  <p>Conner, Viki. 2024. “Nostalgic neighborhoods of TikTok: Mapping a topology of affective publics.” AoIR Selected Papers of Internet Research, published ahead of print. https://doi.org/10.5210/spir.v2024i0.13922.</p>
+  <p>Davies, Callum, Bill Page, Carl Driesener, Zac Anesbury, Song Yang, and Johan Bruwer. 2022. “The Power of Nostalgia: Age and Preference for Popular Music.” Marketing Letters 33 (4): 681–92. https://doi.org/10.1007/s11002-022-09626-7.</p>
+  <p>Dean, Jodi. 2010. “Affective Networks.” MediaTropes 2 (2): 19–44.</p>
+  <p>Debord, Guy. 1955. “Introduction to a Critique of Urban Geography.” Bureau of Public Secrets. https://www.bopsecrets.org/SI/urbgeog.htm.</p>
+  <p>Debord, Guy. 1957. “Report on the Construction of Situations and on the International Situationist Tendency’s Conditions of Organization and Action.” Bureau of Public Secrets. https://www.bopsecrets.org/SI/report.htm.</p>
+  <p>Debord, Guy. 1958. "Theory of the Dérive." Bureau of Public Secrets. https://www.bopsecrets.org/SI/2.derive.htm.</p>
+  <p>Debord, Guy. 1992. Society of the Spectacle. London: Rebel Press.</p>
+  <p>Debord, Guy, and Gil J. Wolman. 1956. “A User’s Guide to Détournement.” Bureau of Public Secrets. https://www.bopsecrets.org/SI/detourn.htm.</p>
+  <p>Deleuze, Gilles, and Félix Guattari. 1980. Mille Plateaux: Capitalisme et Schizophrénie. Les Éditions de Minuit.</p>
+  <p>Dieter, Michael. 2024. “Interface Critique at Large.” Convergence 30 (1): 49–65. https://doi.org/10.1177/13548565221135833.</p>
+  <p>Discogs. 2026. "Discogs Data Dump: Releases (March 2026)." Dataset. Released March 1, 2026. Discogs Data.</p>
+  <p>Elias, Amy J. 2010. “Psychogeography, Détournement, Cyberspace.” New Literary History 41 (4): 821–45.</p>
+  <p>Garcia, Luis-Manuel. 2020. “Feeling the vibe: Sound, vibration, and affective attunement in electronic dance music scenes.” Ethnomusicology Forum 29(1): 21–39. https://doi.org/10.1080/17411912.2020.1733434.</p>
+  <p>Grietzer, Peli. "A Theory of Vibe." 2017. Glass Bead. https://www.glass-bead.org/wp-content/uploads/GB_Site-1_Peli-Grietzer_Eng.pdf.</p>
+  <p>Chun, Wendy Hui Kyong. 2016. Habitual Connections, or Network Maps: Belatedly Too Early.  In Updating to Remain the Same: Habitual New Media. Cambridge, MA: MIT Press. https://doi.org/10.7551/mitpress/10483.003.0007.</p>
+  <p>Hagen, Sal, Daniël de Zeeuw, and Tommaso Venturini. 2025. "Digital Rhythmanalysis: Studying Memetic and Affective Rhythms on the Post-Viral Web." Platforms & Society 2. https://doi.org/10.1177/2976862425139496.</p>
+  <p>Hartmann, Maren. 2003. Situationist Roaming Online. Accessed April 24, 2026. https://are.na/block/9030401.</p>
+  <p>Kinsel, Ema, Greg Marren, Sofia Rossi, Tam Le, Kamran Gasimov, and Martina Schneider. 2026. FuzzySounds. Web interface. OILab. https://vectors2vibes.oilab.nl/.</p>
+  <p>Koenecke, Allison, Anna S. G. Choi, Katelyn X. Mei, Hilke Schellmann, and Mona Sloane. 2024. "Careless Whisper: Speech-to-Text Hallucination Harms." In Proceedings of the 2024 ACM Conference on Fairness, Accountability, and Transparency. https://doi.org/10.1145/3630106.3658996.</p>
+  <p>Kutz, David. 2014. "A Reader: A Thousand Plateaus." davidkutz.com, December 31, 2014. https://davidkutz.com/a-thousand-plateaus-deleuze-guattari/.</p>
+  <p>James, Robin. 2022. “When Did ‘Vibes’ Become a Thing?” Substack newsletter. Its Her Factory Newsletter, January 13. https://itsherfactory.substack.com/p/when-did-vibes-become-a-thing.</p>
+  <p>Lanzendörfer, Luca A., Florian Grötschla, Emil Funke, and Roger Wattenhofer. 2023. “DISCO-10M: A Large-Scale Music Dataset.” arXiv:2306.13512. Preprint, arXiv, October 5. https://doi.org/10.48550/arXiv.2306.13512.</p>
+  <p>Li, Yizhi, Ruibin Yuan, Ge Zhang, Yinghao Ma, Xingran Chen, Hanzhi Yin, Chenghao Xiao, et al. 2024. “Mert: Acoustic Music Understanding Model with Large-Scale Self-Supervised Training.” arXiv.org, December 27. https://arxiv.org/abs/2306.00107. </p>
+  <p>Lünenborg, Margreth. 2019. Affective Publics. In Affective Societies, 1st ed. London: Routledge, 2019. https://doi.org/10.4324/9781351039260-28.</p>
+  <p>Manovich, Lev. 2020. Cultural Analytics. Cambridge, MA: The MIT Press. https://doi.org/10.7551/mitpress/11214.001.0001.</p>
+  <p>Martínez-Saez, Maria Cruz, Laura Ros, Marco López-Cano, Marta Nieto, Beatriz Navarro, and Jose Miguel Latorre. 2024. “Effect of Popular Songs from the Reminiscence Bump as Autobiographical Memory Cues in Aging: A Preliminary Study Using EEG.” Frontiers in Neuroscience 17 (January). https://doi.org/10.3389/fnins.2023.1300751.</p>
+  <p>Massumi, Brian. 2002. Parables for the Virtual: Movement, Affect, Sensation. Durham, NC: Duke University Press.</p>
+  <p>McInnes, Leland. 2018. "Basic UMAP Parameters." umap 0.5.8 documentation. https://umap-learn.readthedocs.io/en/latest/parameters.html.</p>
+  <p>McInnes, Leland, and John Healy. 2018. "UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction." arXiv:1802.03426. https://doi.org/10.48550/arXiv.1802.03426.</p>
+  <p>MetaBrainz Foundation. 2026. "MusicBrainz: The Open Music Encyclopedia." Accessed April 24, 2026. https://musicbrainz.org/.</p>
+  <p>Prey, Robert. 2020. “Locating Power in Platformization: Music Streaming Playlists and Curatorial Power.” Social Media + Society 6 (2). https://doi.org/10.1177/2056305120933291.</p>
+  <p>Radford, Alec, Jong Wook Kim, Tao Xu, Greg Brockman, Christine McLeavey, and Ilya Sutskever. 2022. "Robust Speech Recognition via Large-Scale Weak Supervision." arXiv:2212.04356. https://arxiv.org/abs/2212.04356.</p>
+  <p>Reimers, Nils, and Iryna Gurevych. 2019. "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks." In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing. arXiv:1908.10084. https://arxiv.org/abs/1908.10084.</p>
+  <p>Renwick, James, and Matthew H. Woolhouse. 2023. “Reminiscence Bump Invariance with Respect to Genre, Age, and Country.” Psychology of Music 51 (4): 1349–65. https://doi.org/10.1177/03057356221141735.</p>
+  <p>Rodeux. 2025. “The Society of the Spectacle in the Digital Age.” Medium. https://medium.com/@orlorodriguez/the-society-of-the-spectacle-in-the-digital-age-83f5a1a432fb.</p>
+  <p>Rutherford, Danilyn. 2016. “Affect Theory and the Empirical.” Annual Review of Anthropology 45 (Volume 45, 2016): 285–300. https://doi.org/10.1146/annurev-anthro-102215-095843.</p>
+  <p>Salton, Gerard, Andrew Wong, and Chungshu Yang. 1975. “A Vector Space Model for Automatic Indexing.” Communications of the ACM 18 (11): 613–20. https://doi.org/10.1145/361219.361220. </p>
+  <p>Scikit-learn developers. 2024. "sklearn.manifold.trustworthiness." scikit-learn 1.6 documentation. https://scikit-learn.org/stable/modules/generated/sklearn.manifold.trustworthiness.html.</p>
+  <p>Vectors2Vibes. 2026a. "vectors2vibes-discogs-metadata." Dataset. Hugging Face. https://doi.org/10.57967/hf/8531.</p>
+  <p>Vectors2Vibes. 2026b. "vectors2vibes-discogs-audio." Unpublished dataset. Hugging Face.</p>
+  <p>Vectors2Vibes. 2026c. "vectors2vibes-preprocessed-thumbnails." Dataset. Hugging Face. https://doi.org/10.57967/hf/8530.</p>
+  <p>Venna, Jarkko, and Samuel Kaski. 2006. “Local Multidimensional Scaling.” Neural Networks, Advances in Self Organising Maps - WSOM’05, vol. 19 (6): 889–99. https://doi.org/10.1016/j.neunet.2006.05.014.</p>
+  <p>Wang, Wenhui, Furu Wei, Li Dong, Hangbo Bao, Nan Yang, and Ming Zhou. 2020. "MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers." In Advances in Neural Information Processing Systems 33. arXiv:2002.10957. https://arxiv.org/abs/2002.10957.</p>
+</div>

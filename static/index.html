@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>vectors2vibes</title>
+<title>FuzzySounds</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
 <style>
@@ -91,6 +91,75 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 #help-dialog-references p, #help-dialog-references a { font-size: 10px; line-height: 1.1; }
 #help-dialog-formula { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--dim); margin-top: 1px; background-color: var(--ink); padding: .5px; }
 
+/* Full report dialog — centered overlay */
+#full-report-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,9,8,0.6);
+  z-index: 1000;
+  display: none;
+}
+#full-report-overlay.visible { display: block; }
+#full-report-dialog {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 900px; max-height: 82vh;
+  display: flex; flex-direction: column;
+  background: rgba(10,9,8,0.95); border: 1px solid var(--dim);
+  padding: 18px 22px;
+  z-index: 1001;
+  opacity: 0;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+  pointer-events: none;
+}
+#full-report-dialog.visible {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  pointer-events: all;
+}
+#full-report-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(176,169,159,0.2);
+}
+#full-report-title { font-family: 'CirrusCumulus', monospace; font-size: 15px; color: var(--dim); letter-spacing: 3px; }
+#full-report-close {
+  background: none; border: none; color: var(--dim);
+  font-size: 12px; letter-spacing: 2px; cursor: pointer; padding: 0;
+  -webkit-text-stroke: 0px;
+}
+#full-report-close:hover { color: var(--paper); }
+#full-report-body {
+  font-size: 13px; color: var(--dim); line-height: 1.4;
+  overflow-y: auto; flex: 1; scroll-behavior: smooth;
+}
+#full-report-body * { font-family: 'Courier New', monospace; -webkit-text-stroke: 0px; }
+#full-report-body::-webkit-scrollbar { width: 2px; }
+#full-report-body::-webkit-scrollbar-track { background: transparent; }
+#full-report-body::-webkit-scrollbar-thumb { background: rgba(176,169,159,0.2); }
+#full-report-body p { padding-bottom: 14px; }
+
+/* Report sections */
+#full-report-body .report-h1 { font-family: 'CirrusCumulus', monospace; font-size: 16px; color: var(--dim); letter-spacing: 3px; -webkit-text-stroke: 0.6px; margin-top: 20px; padding-top: 20px; padding-bottom: 20px; border-top: 1px solid rgba(176,169,159,0.3); }
+#full-report-body .report-h2 { font-family: 'CirrusCumulus', monospace; font-size: 14px; color: var(--dim); letter-spacing: 2px; -webkit-text-stroke: 0.4px; padding-bottom: 20px; }
+#full-report-body .report-h3 { font-family: 'CirrusCumulus', monospace; font-size: 14px; color: var(--dim); letter-spacing: 2px; -webkit-text-stroke: 0.4px;padding-bottom: 20px; }
+#full-report-body .report-title { font-family: 'CirrusCumulus', monospace; font-size: 18px; color: var(--dim); letter-spacing: 3px; -webkit-text-stroke: 0.6px; margin-top: 20px; padding-top: 14px; }
+#full-report-body .report-subtitle { font-size: 16px; color: var(--dim); letter-spacing: 3px; padding-top: 10px; padding-bottom: 10px; }
+#full-report-body .report-authors { font-size: 13px; color: var(--dim); letter-spacing: 3px; margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(176,169,159,0.3); }
+#full-report-body .report-date { font-size: 12px; color: var(--dim); letter-spacing: 3px; padding-top: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(176,169,159,0.3); }
+#full-report-body .report-intro { text-align:center; margin-top: 10px; padding-top: 10px; padding-bottom: 10px; }
+#full-report-body .report-disclosure { font-size: 10px; color: var(--dim); letter-spacing: 3px; margin-top: 20px; padding-top: 14px; padding-bottom: 10px; border-top: 1px solid rgba(176,169,159,0.3); }
+#full-report-body .report-formula { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--dim); display: block; padding-bottom: 14px; line-height: 1.6; }
+.report-figure { margin: 14px 0; border: 1px solid rgba(176,169,159,0.2); padding: 12px; }
+.report-figure img { display: block; max-width: 100%; height: auto; filter: brightness(0.88) contrast(1.05); }
+.report-caption { font-size: 11px; color: var(--dim); letter-spacing: 1px; margin-top: 8px; line-height: 1.5; }
+.report-caption em { font-style: italic; }
+.report-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+.report-table th { color: var(--dim); border-bottom: 1px solid rgba(176,169,159,0.35); padding: 4px 10px 4px 0; text-align: left; letter-spacing: 1px; font-weight: normal; -webkit-text-stroke: 0.4px; }
+.report-table td { color: var(--dim); border-bottom: 1px solid rgba(176,169,159,0.1); padding: 4px 10px 4px 0; vertical-align: top; }
+.report-appendix { margin-top: 20px; padding-top: 14px; }
+.report-refs { margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(176,169,159,0.2); }
+.report-refs p, .report-refs a { font-size: 9px; line-height: 1.4; }
+
 #layers {
   position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
   display: flex; gap: 2px; pointer-events: all; z-index: 11;
@@ -166,7 +235,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
   align-items: center; justify-content: center; gap: 28px;
   padding: 40px;
 }
-#spawn-title { font-size: 21px; color: var(--faint); letter-spacing: 6px; }
+#spawn-title { font-size: 21px; color: var(--faint); letter-spacing: 3px; }
 #spawn-subtitle, #spawn-subtitle i { font-family: 'Courier New', Courier, monospace; font-size: 15px; color: var(--dim); -webkit-text-stroke: 0px; text-align: justify; margin-bottom: 10px; max-width: 28vw;}
 
 #spawn-options { display: flex; flex-direction: column; gap: 10px; width: 320px; }
@@ -267,7 +336,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 <body>
 
 <div id="spawn-screen">
-  <div id="spawn-title">vectors2vibes</div>
+  <div id="spawn-title">FuzzySounds</div>
   <div id="spawn-subtitle">
     Against recommendation, this interface invites you to disorient, reassociate, and vibe machinically. You are invited to move beyond <i>"slavish reference to citations"</i> and enter a sonic EMBEDDING SPACE — a fuzzy relational field of ambiance.
   </div>
@@ -326,13 +395,13 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
         <span id="help-dialog-formula">p̄ = (1/k) · Σᵢ eᵢ  →  [x, z] = UMAP.transform(p̄)</span></p>
         <p>Cosine similarity: Below neighborhood coordinates, observe the degree of angular (dis)similarity between your positions of origin and arrival upon navigating.</p>
         <p><span id="help-dialog-formula">cos_sim(A, B) = (A · B) / (‖A‖ · ‖B‖)</span><br><i>(where cos_sim=1 is the most similar)</i></p>
-        <p>(<a href="#help-dialog-navigational-styles">see navigational styles</a>)</p>
+        <p>(<a href="#help-dialog-navigational-styles"><i>see navigational styles</i></a>)</p>
       </div>
       <div id="help-dialog-umap-calculation">
         <div id="help-dialog-subheader">UMAP calculation</div>
         <p>High dimensional embeddings have been projected onto a 2D <span id="help-dialog-formula">UMAP</span> field for human legibility. Parameters have been tuned to preserve as much raw machinic character as possible.</p>
         <p><span id="help-dialog-formula">WORLD_SCALE=[-1000, 1000]</span> The coordinate field is scaled to account for <span id="help-dialog-formula">UMAP</span>'s small default float range:<br> <span id="help-dialog-formula">[-2.36, 10.48] x [2.48, 10.77]</span></p>
-        <p><span id="help-dialog-formula">n_neighbors=10</span> for audio field<br><span id="help-dialog-formula">n_neighbors=20</span> for lyrical field<br><span id="help-dialog-formula">n_neighbors=10</span> for combined field<br> Tuned based on trustworthiness and continuity scores from <span id="help-dialog-formula">n_neighbors=5→50</span>, comparing <span id="help-dialog-formula">UMAP</span> output and raw embedding fidelity. <i>(see full report)</i></p>
+        <p><span id="help-dialog-formula">n_neighbors=10</span> for audio field<br><span id="help-dialog-formula">n_neighbors=20</span> for lyrical field<br><span id="help-dialog-formula">n_neighbors=10</span> for combined field<br> Tuned based on trustworthiness and continuity scores from <span id="help-dialog-formula">n_neighbors=5→50</span>, comparing <span id="help-dialog-formula">UMAP</span> output and raw embedding fidelity. <i>(<a href="#" class="open-full-report">see full report</a>)</i></p>
       </div>
       <div id="help-dialog-ghost-centroid">
         <div id="help-dialog-subheader">Ghost centroid (habitual axis)</div>
@@ -367,7 +436,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
 <div id="lyric-columns"></div>
 
 <div id="topleft">
-  <div id="title">vectors2vibes</div>
+  <div id="title">FuzzySounds</div>
   <div id="coords-title">neighborhood centroid</div>
   <div id="coords">—</div>
   <div id="similarity-title">cos_sim</div>
@@ -458,7 +527,7 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
       <div id="help-dialog-subheader">UMAP calculation</div>
       <p>High dimensional embeddings have been projected onto a 2D <span id="help-dialog-formula">UMAP</span> field for human legibility. Parameters have been tuned to preserve as much raw machinic character as possible.</p>
       <p><span id="help-dialog-formula">WORLD_SCALE=[-1000, 1000]</span> The coordinate field is scaled to account for <span id="help-dialog-formula">UMAP</span>'s small default float range:<br> <span id="help-dialog-formula">[-2.36, 10.48] x [2.48, 10.77]</span></p>
-      <p><span id="help-dialog-formula">n_neighbors=10</span> for audio field<br><span id="help-dialog-formula">n_neighbors=20</span> for lyrical field<br><span id="help-dialog-formula">n_neighbors=10</span> for combined field<br> Tuned based on trustworthiness and continuity scores from <span id="help-dialog-formula">n_neighbors=5→50</span>, comparing <span id="help-dialog-formula">UMAP</span> output and raw embedding fidelity. <i>(see full report)</i></p>
+      <p><span id="help-dialog-formula">n_neighbors=10</span> for audio field<br><span id="help-dialog-formula">n_neighbors=20</span> for lyrical field<br><span id="help-dialog-formula">n_neighbors=10</span> for combined field<br> Tuned based on trustworthiness and continuity scores from <span id="help-dialog-formula">n_neighbors=5→50</span>, comparing <span id="help-dialog-formula">UMAP</span> output and raw embedding fidelity. <i>(<a href="#" class="open-full-report">see full report</a>)</i></p>
     </div>
     <div id="help-dialog-ghost-centroid">
       <div id="help-dialog-subheader">Ghost centroid (habitual axis)</div>
@@ -483,6 +552,16 @@ body { background: var(--bg); overflow: hidden; color: var(--paper); cursor: cro
       <p><span id="[4]">[4]</span> A. J. Elias, “Psychogeography, Détournement, Cyberspace,” New Literary History, vol. 41, no. 4, pp. 821–845, Autumn 2010, <a href="https://dx.doi.org/10.1353/nlh.2010.0033">doi: 10.1353/nlh.2010.0033</a>.</p>
       <p><span id="[5]">[5]</span> G. Debord and G. Wolman, “A User’s Guide to Détournement,” 1956. <a href="https://www.bopsecrets.org/SI/detourn.htm">https://www.bopsecrets.org/SI/detourn.htm</a>.</p>
     </div>
+  </div>
+</div>
+
+<div id="full-report-overlay"></div>
+<div id="full-report-dialog">
+  <div id="full-report-header">
+    <button id="full-report-close">esc</button>
+  </div>
+  <div id="full-report-body">
+    <!-- content loaded from report.html -->
   </div>
 </div>
 
@@ -1058,6 +1137,34 @@ function drawMinimap() {
 const keys = {};
 let yaw = 0;
 
+// ── Full report dialog ─────────────────────────────────────────
+const _fullReportDialog  = document.getElementById('full-report-dialog');
+const _fullReportOverlay = document.getElementById('full-report-overlay');
+
+let _reportLoaded = false;
+function openFullReport(e) {
+  e.preventDefault();
+  _fullReportDialog.classList.add('visible');
+  _fullReportOverlay.classList.add('visible');
+  if (!_reportLoaded) {
+    fetch('/static/report.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('full-report-body').innerHTML = html;
+        _reportLoaded = true;
+      });
+  }
+}
+function closeFullReport() {
+  _fullReportDialog.classList.remove('visible');
+  _fullReportOverlay.classList.remove('visible');
+}
+document.querySelectorAll('.open-full-report').forEach(el => {
+  el.addEventListener('click', openFullReport);
+});
+document.getElementById('full-report-close').addEventListener('click', closeFullReport);
+_fullReportOverlay.addEventListener('click', closeFullReport);
+
 // ── Help dialog ───────────────────────────────────────────────
 let _helpBuf = '';
 const _helpDialog = document.getElementById('help-dialog');
@@ -1105,8 +1212,12 @@ document.addEventListener('keydown', e => {
   if (spawnVisible) return;
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-  // Escape closes help dialog
+  // Escape closes full report dialog (first), then help dialog
   if (e.key === 'Escape') {
+    if (_fullReportDialog.classList.contains('visible')) {
+      closeFullReport();
+      return;
+    }
     _helpDialog.classList.remove('visible');
     _helpBuf = '';
     return;
